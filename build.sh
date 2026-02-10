@@ -16,12 +16,8 @@ echo "🖼️  Collecte des fichiers statiques..."
 python manage.py collectstatic --noinput
 
 # 3️⃣ Tenter d'appliquer les migrations (échoue silencieusement si la DB n'est pas encore configurée, comme au tout premier déploiement)
-echo "🗄️  Vérification et application des migrations..."
-if python manage.py showmigrations --plan 2>/dev/null | grep -q "\[ \]"; then
-    echo "   ➡️  Migrations en attente détectées. Application..."
-    python manage.py migrate
-else
-    echo "   ⏭️  Aucune migration en attente ou base de données non configurée."
-fi
+# 3️⃣ Appliquer les migrations de base de données
+echo "🗄️  Application des migrations..."
+python manage.py migrate --noinput
 
 echo "✅ Build terminé !"
