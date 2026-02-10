@@ -1,0 +1,450 @@
+{% load i18n %}
+{% load i18n static %}
+<!DOCTYPE html>
+<html lang="{{ LANGUAGE_CODE }}" dir="{% if LANGUAGE_BIDI %}rtl{% else %}ltr{% endif %}">
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" type="image/x-icon" href="{% static 'mosques/img/favicon.ico' %}">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🕌 {% trans "Annuaire des Mosquées d'Algérie" %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <style>
+        :root { --primary-green: #2e7d32; --dark-green: #1b5e20; }
+        body { background-color: #f4f7f4; font-family: 'Inter', system-ui, sans-serif; }
+
+        /* --- NAVBAR STYLE PILL --- */
+        .navbar {
+            background: rgba(255, 255, 255, 0.9) !important;
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 100px;
+            padding: 0.6rem 1.5rem !important;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+            max-width: 1150px;
+            margin: 0 auto;
+        }
+        .navbar-container {
+            position: fixed;
+            top: 20px;
+            left: 0;
+            right: 0;
+            z-index: 1050;
+            padding: 0 15px;
+        }
+
+        .date-stack {
+            font-size: 0.75rem;
+            line-height: 1.2;
+            border-left: 2px solid #eee;
+            padding-left: 15px;
+            margin-left: 15px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .nav-link {
+            font-weight: 600;
+            color: #333 !important;
+            padding: 0.6rem 1rem !important;
+            border-radius: 50px;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+        }
+        .nav-link:hover { background: rgba(46, 125, 50, 0.1); color: var(--primary-green) !important; }
+
+        .nav-admin-btn {
+            background: #fff5f5;
+            color: #e03131 !important;
+            border: 1px solid #ffc9c9;
+            margin-left: 10px;
+        }
+        .nav-admin-btn:hover { background: #e03131 !important; color: white !important; }
+
+        /* --- HERO SECTION --- */
+        .hero-section { background: linear-gradient(135deg, var(--dark-green) 0%, var(--primary-green) 100%); color: white; padding: 5rem 0; border-radius: 0 0 3rem 3rem; }
+        .hero-btns-container { display: flex; justify-content: center; flex-wrap: wrap; gap: 32px; margin-top: 2.5rem; }
+        .btn-hero { padding: 1rem 2.5rem; font-weight: 700; border-radius: 50px; transition: 0.3s; text-decoration: none; text-transform: uppercase; letter-spacing: 0.5px;}
+        .btn-hero-primary { background: #fff; color: var(--primary-green) !important; box-shadow: 0 10px 20px rgba(0,0,0,0.15); }
+        .btn-hero-outline { background: rgba(255,255,255,0.1); color: white !important; border: 2px solid white; backdrop-filter: blur(5px); }
+        .btn-hero:hover { transform: translateY(-5px); }
+
+        /* --- STATS & FEATURE CARDS --- */
+        .stat-card { background: white; border-radius: 1.5rem; padding: 2rem; border: 1px solid #eee; text-align: center; transition: 0.3s; }
+        .stat-card:hover { transform: translateY(-10px); box-shadow: 0 15px 30px rgba(0,0,0,0.05); }
+        .stat-number { font-size: 2.5rem; font-weight: 800; color: var(--primary-green); }
+
+        .feature-card { border-radius: 20px; border: none; transition: 0.3s; background: white; box-shadow: 0 5px 15px rgba(0,0,0,0.05); height: 100%; padding: 2.5rem 1.5rem; }
+        .feature-card:hover { transform: translateY(-10px); box-shadow: 0 15px 30px rgba(0,0,0,0.1); }
+        .icon-wrapper { width: 75px; height: 75px; background: #f0f7f0; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem; color: var(--primary-green); font-size: 2rem; transition: 0.3s; }
+        .feature-card:hover .icon-wrapper { background: var(--primary-green); color: white; }
+
+        .gradient-text { background: linear-gradient(90deg, var(--primary-green), #66bb6a); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+
+        .mosque-card { border: none; border-radius: 1rem; border-left: 6px solid var(--primary-green); background: white; box-shadow: 0 4px 12px rgba(0,0,0,0.05); transition: 0.3s; }
+        .mosque-card:hover { transform: scale(1.02); }
+
+        .custom-toast {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0.8);
+            background: rgba(46, 125, 50, 0.98); /* Vert un peu plus opaque */
+            color: white;
+            padding: 40px 60px; /* Plus grand espace intérieur */
+            border-radius: 20px;
+            opacity: 0;
+            visibility: hidden;
+            transition: 0.3s;
+            z-index: 9999;
+            text-align: center;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.2);
+            min-width: 350px; /* Largeur minimale assurée */
+        }
+
+        .custom-toast span {
+            font-size: 1.4rem; /* Texte plus grand */
+            font-weight: 600;
+        }
+
+        .custom-toast .sub-text {
+            font-size: 1rem;
+            opacity: 0.9;
+            display: block;
+            margin-top: 10px;
+        }
+        .custom-toast.show { opacity: 1; visibility: visible; transform: translate(-50%, -50%) scale(1); }
+    </style>
+</head>
+<body>
+
+<div class="navbar-container">
+        <nav class="navbar navbar-expand-lg">
+            <div class="container-fluid">
+                <a class="navbar-brand fw-bold d-flex align-items-center" href="/" style="color: var(--primary-green);">
+                    <i class="bi bi-mosque-fill me-2"></i>
+                    <span>DJAMAA<span class="text-dark">.DZ</span></span>
+                </a>
+
+
+
+                <div class="date-stack d-none d-lg-flex">
+                    <div class="text-muted small">
+                        <i class="bi bi-calendar3 me-1"></i> <span id="home-date-gregorian"></span>
+                    </div>
+                    <div class="text-success fw-bold small">
+                        <i class="bi bi-moon-stars-fill me-1"></i> <span id="home-date-hijri"></span>
+                    </div>
+                </div>
+
+                <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav ms-auto align-items-center">
+                        <li class="nav-item">
+                            <a class="nav-link active" href="{% url 'home' %}">
+                                <i class="bi bi-house-door me-1"></i>
+                                {% trans "Accueil" %}
+                            </a>
+                        </li>
+                        <li class="nav-item"><a class="nav-link" href="{% url 'proposer' %}"><i class="bi bi-plus-circle me-1"></i>{% trans "Proposition" %}</a></li>
+                        <li class="nav-item"><a class="nav-link" href="{% url 'carte' %}"><i class="bi bi-map me-1"></i>{% trans "Carte" %}</a></li>
+                        <li class="nav-item"><a class="nav-link" href="{% url 'panorama' %}"><i class="bi bi-geo-alt me-1"></i>{% trans "Panorama" %}</a></li>
+
+                        {% if user.is_staff %}
+                            <li class="nav-item">
+                                <a class="nav-link nav-admin-btn" href="{% url 'admin:index' %}">
+                                    <i class="bi bi-shield-lock me-1"></i> {% trans "Administrateur" %}
+                                </a>
+                            </li>
+                        {% endif %}
+
+                        <!-- DROPDOWN DE LANGUE - VERSION CORRIGÉE -->
+                        {% get_current_language as LANGUAGE_CODE %}
+                        <li class="nav-item dropdown ms-lg-2">
+                            <!-- Bouton dropdown visible -->
+                            <a class="nav-link dropdown-toggle shadow-sm" href="#" id="langDropdown" role="button"
+                               data-bs-toggle="dropdown" aria-expanded="false"
+                               style="background: #2e7d32; color: white !important; border-radius: 50px;
+              padding: 5px 12px !important; font-size: 0.85rem; font-weight: bold;
+              display: inline-flex; align-items: center; border: none;">
+                                <i class="bi bi-translate me-2"></i>
+                                <span>
+            {% if LANGUAGE_CODE == 'ar' %}
+                AR 🇩🇿
+            {% elif LANGUAGE_CODE == 'en' %}
+                EN 🇬🇧
+            {% else %}
+                FR 🇫🇷
+            {% endif %}
+        </span>
+                            </a>
+
+                            <!-- Menu déroulant -->
+                            <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0 mt-2"
+                                aria-labelledby="langDropdown" style="border-radius: 12px; min-width: 150px;">
+
+                                <!-- Français -->
+                                <li>
+                                    <form action="{% url 'set_language' %}" method="post" class="m-0">
+                                        {% csrf_token %}
+                                        <input name="next" type="hidden" value="{{ request.get_full_path }}">
+                                        <button type="submit" name="language" value="fr"
+                                                class="dropdown-item d-flex justify-content-between {% if LANGUAGE_CODE == 'fr' %}fw-bold text-success{% endif %}">
+                                            <span>Français</span>
+                                            {% if LANGUAGE_CODE == 'fr' %}✓{% endif %}
+                                        </button>
+                                    </form>
+                                </li>
+
+                                <!-- العربية -->
+                                <li>
+                                    <form action="{% url 'set_language' %}" method="post" class="m-0">
+                                        {% csrf_token %}
+                                        <input name="next" type="hidden" value="{{ request.get_full_path }}">
+                                        <button type="submit" name="language" value="ar"
+                                                class="dropdown-item d-flex justify-content-between text-end {% if LANGUAGE_CODE == 'ar' %}fw-bold text-success{% endif %}">
+                                            {% if LANGUAGE_CODE == 'ar' %}✓{% endif %}
+                                            <span>العربية</span>
+                                        </button>
+                                    </form>
+                                </li>
+
+                                <!-- English -->
+                                <li>
+                                    <form action="{% url 'set_language' %}" method="post" class="m-0">
+                                        {% csrf_token %}
+                                        <input name="next" type="hidden" value="{{ request.get_full_path }}">
+                                        <button type="submit" name="language" value="en"
+                                                class="dropdown-item d-flex justify-content-between {% if LANGUAGE_CODE == 'en' %}fw-bold text-success{% endif %}">
+                                            <span>English</span>
+                                            {% if LANGUAGE_CODE == 'en' %}✓{% endif %}
+                                        </button>
+                                    </form>
+                                </li>
+                            </ul>
+                        </li>
+
+
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </div>
+
+    <div style="margin-top: 120px;"></div>
+
+    <section class="hero-section mx-3">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-3 text-center d-none d-lg-block">
+                    <img src="{% static 'mosques/images/Kaaba.jpg' %}" class="img-fluid rounded-4 shadow-lg hero-img"
+                         style="max-height: 250px; border: 3px solid rgba(255,255,255,0.2);">
+                </div>
+                <div class="col-lg-6 text-center">
+                    <h1 class="display-4 fw-bold mb-3">{% trans "Annuaire Mondial des Mosquées" %}</h1>
+                    <p class="lead mb-4 opacity-90">{% trans "Plateforme collaborative mondiale pour référencer les mosquées. Contribuez à préserver et faire rayonner notre patrimoine religieux universel." %}</p>
+                    <div class="hero-btns-container">
+                        <a href="{% url 'proposer' %}" class="btn-hero btn-hero-primary"><i class="bi bi-plus-circle-fill me-2"></i> {% trans "Proposer une mosquée" %}</a>
+                        <a href="{% url 'carte' %}" class="btn-hero btn-hero-outline"><i class="bi bi-map-fill me-2"></i> {% trans "Explorer la carte" %}</a>
+                    </div>
+                </div>
+                <div class="col-lg-3 text-center d-none d-lg-block">
+                    <img src="{% static 'mosques/images/Mosquee-sidi-amar-annaba.jpg' %}" class="img-fluid rounded-4 shadow-lg hero-img" style="max-height: 250px; border: 3px solid rgba(255,255,255,0.2);">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="container my-5">
+        <div class="row g-4">
+            <div class="col-md-4"><div class="stat-card"><div class="stat-number">{{ total_mosques }}</div><div class="text-muted fw-bold">{% trans "Mosquées validées" %}</div></div></div>
+            <div class="col-md-4"><div class="stat-card"><div class="stat-number">58</div><div class="text-muted fw-bold">{% trans "Wilayas couvertes" %}</div></div></div>
+            <div class="col-md-4"><div class="stat-card"><div class="stat-number">{{ total_wilayas }}</div><div class="text-muted fw-bold">{% trans "Wilayas actives" %}</div></div></div>
+        </div>
+    </section>
+
+    <section class="container mb-5 py-4">
+        <div class="text-center mb-5">
+            <span class="badge bg-success bg-opacity-10 text-success px-3 py-2 rounded-pill fw-bold mb-2">{% trans "MODE D'EMPLOI" %}</span>
+            <h2 class="display-6 fw-bold gradient-text">{% trans "Comment ça marche ?" %}</h2>
+        </div>
+        <div class="row g-4">
+            <div class="col-md-4">
+                <a href="{% url 'carte' %}" class="text-decoration-none">
+                    <div class="card feature-card">
+                        <div class="card-body text-center">
+                            <div class="icon-wrapper"><i class="bi bi-search"></i></div>
+                            <h4 class="text-dark">{% trans "Recherchez" %}</h4>
+                            <p class="text-muted">{% trans "Explorez notre base de données intuitive. Filtrez par Wilaya ou par nom pour trouver précisément la mosquée que vous cherchez." %}</p>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            <div class="col-md-4">
+                <a href="{% url 'proposer' %}" class="text-decoration-none">
+                    <div class="card feature-card">
+                        <div class="card-body text-center">
+                            <div class="icon-wrapper"><i class="bi bi-pencil-square"></i></div>
+                            <h4 class="text-dark">{% trans "Proposez" %}</h4>
+                            <p class="text-muted">{% trans "Devenez contributeur en ajoutant une mosquée. Remplissez le formulaire, joignez des photos et aidez à documenter notre patrimoine." %}</p>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            <div class="col-md-4">
+                <div class="card feature-card" onclick="copierLien()" style="cursor: pointer;">
+                    <div class="card-body text-center">
+                        <div class="icon-wrapper">
+                            <i class="bi bi-share-fill"></i>
+                        </div>
+                        <h4 class="text-dark">{% trans "Partagez" %}</h4>
+                        <p class="text-muted">
+                            {% trans "Diffusez les fiches des mosquées à vos proches. Ensemble, facilitons l'accès à l'information pour toute la communauté algérienne." %}
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    {% if recent_mosques %}
+    <section class="container mb-5">
+        <h2 class="mb-4 gradient-text fw-bold"><i class="bi bi-clock-history"></i> {% trans "Derniers ajouts" %}</h2>
+        <div class="row g-4">
+            {% for mosque in recent_mosques %}
+            <div class="col-md-6 col-lg-4">
+                <div class="card mosque-card h-100 shadow-sm border-0">
+                    <div class="card-body">
+                        <h5 class="fw-bold text-success">{{ mosque.name }}</h5>
+                        <p class="card-text mb-2"><i class="bi bi-geo-alt-fill text-secondary"></i> {{ mosque.city }} - {{ mosque.wilaya.name_fr }}</p>
+                        {% if mosque.description %}<p class="card-text text-muted small">{{ mosque.description|truncatechars:100 }}</p>{% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+
+    <footer class="bg-dark text-white py-5 mt-5">
+        <div class="container">
+            <div class="row g-4 text-center text-md-start">
+                <div class="col-md-6">
+                    <h5 class="fw-bold mb-3 text-success">DJAMAA.DZ</h5>
+                    <p class="opacity-75">{% trans "Projet collaboratif pour préserver et partager notre patrimoine religieux en Algérie." %}</p>
+                </div>
+                <div class="col-md-3">
+                    <h5 class="mb-3">{% trans "Navigation" %}</h5>
+                    <ul class="list-unstyled opacity-75">
+                        <li><a href="/" class="text-white text-decoration-none">{% trans "Accueil" %}</a></li>
+                        <li><a href="{% url 'proposer' %}" class="text-white text-decoration-none">{% trans "Proposition" %}</a></li>
+                        <li><a href="{% url 'carte' %}" class="text-white text-decoration-none">{% trans "Carte" %}</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-3">
+                    <h5 class="mb-3">{% trans "Statut" %}</h5>
+                    <div class="d-flex align-items-center justify-content-center justify-content-md-start mb-2">
+                        <div class="bg-success rounded-circle p-1 me-2" style="width: 10px; height: 10px;"></div>
+                        <span class="small">{% trans "Système actif" %}</span>
+                    </div>
+                    <p class="opacity-50 small">{{ total_mosques }} {% trans "mosquées référencées" %}</p>
+                </div>
+            </div>
+            <hr class="my-4 opacity-25">
+            <div class="text-center opacity-50 small">
+                <p class="mb-0">© 2026 {% trans "Annuaire des Mosquées d'Algérie" %} - 🇩🇿</p>
+            </div>
+        </div>
+    </footer>
+
+    <div id="shareToast" class="custom-toast">
+        <i class="bi bi-check2-circle mb-3" style="font-size: 3rem;"></i><br>
+        <span>{% trans "Lien copié !" %}</span>
+        <span class="sub-text">{% trans "Partagez ce lien dans tous vos réseaux sociaux." %}</span>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function updateHomeDates() {
+            const today = new Date();
+
+            // 1. DATE GRÉGORIENNE (en français)
+            const gregOptions = {weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'};
+            document.getElementById('home-date-gregorian').innerHTML = today.toLocaleDateString('fr-FR', gregOptions);
+
+            // 2. DATE HIJRI (API précise en arabe)
+            const hijriElem = document.getElementById('home-date-hijri');
+            if (!hijriElem) return;
+
+            const yyyy = today.getFullYear();
+            const mm = String(today.getMonth() + 1).padStart(2, '0');
+            const dd = String(today.getDate()).padStart(2, '0');
+
+            // Fonction asynchrone pour l'API
+            async function fetchHijriDate() {
+                try {
+                    const response = await fetch(`https://api.aladhan.com/v1/gToH?date=${dd}-${mm}-${yyyy}`);
+                    const data = await response.json();
+                    if (data.code === 200) {
+                        const hijri = data.data.hijri;
+                        hijriElem.innerHTML = `${hijri.day} ${hijri.month.ar} ${hijri.year} هـ`;
+                        hijriElem.dir = "rtl";
+                        hijriElem.style.fontFamily = "'Segoe UI', Arial, sans-serif";
+                        return;
+                    }
+                } catch (error) {
+                    console.log("API hijri échouée, utilisant fallback");
+                }
+
+                // FALLBACK si API échoue (votre calcul original converti en arabe)
+                const hijriMonthsAr = ["محرم", "صفر", "ربيع الأول", "ربيع الثاني", "جمادى الأولى", "جمادى الآخرة", "رجب", "شعبان", "رمضان", "شوال", "ذو القعدة", "ذو الحجة"];
+
+                let day = today.getDate(), month = today.getMonth(), year = today.getFullYear();
+                if (year < 1900) year += 1900;
+                let m = month + 1, y = year;
+                if (m < 3) {
+                    y -= 1;
+                    m += 12;
+                }
+                let a = Math.floor(y / 100), b = 2 - a + Math.floor(a / 4);
+                let jd = Math.floor(365.25 * (y + 4716)) + Math.floor(30.6001 * (m + 1)) + day + b - 1524.5;
+                let z = Math.floor(jd + 0.5), cyc = Math.floor((z - 1948439.5) / 10631),
+                    l = z - 1948439.5 - cyc * 10631;
+                let j = Math.floor((l - 0.5) / 354.36667), h_year = cyc * 30 + j,
+                    r = l - Math.floor(j * 354.36667 + 0.5);
+                let h_month = Math.floor((r - 5) / 29.5);
+                if (h_month < 0) h_month = 0; else if (h_month > 11) h_month = 11;
+                let h_day = Math.floor(r - Math.floor(h_month * 29.5 + 0.5));
+
+                hijriElem.innerHTML = (h_day + 1) + " " + hijriMonthsAr[h_month] + " " + (h_year + 1401) + " هـ";
+                hijriElem.dir = "rtl";
+            }
+
+            fetchHijriDate();
+        }
+
+        updateHomeDates();
+
+        function copierLien() {
+            // On copie l'URL actuelle du site
+            navigator.clipboard.writeText(window.location.href).then(() => {
+                // On affiche le message de confirmation
+                const toast = document.getElementById('shareToast');
+                toast.classList.add('show');
+
+                // On cache le message après 2.5 secondes
+                setTimeout(() => {
+                    toast.classList.remove('show');
+                }, 4500);
+            });
+        }
+
+    </script>
+
+</body>
+</html>

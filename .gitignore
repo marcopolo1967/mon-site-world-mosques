@@ -1,0 +1,57 @@
+### 🔒 PROTECTION ABSOLUE - BASE DE DONNÉES ET SECRETS
+# Fichiers de base de données (SQLite, MySQL, etc.) - NE PAS LES PARTAGER !
+*.sqlite3
+*.db
+*.mdb
+*.mysql
+*.frm
+*.myd
+*.myi
+
+# Clés et certificats secrets
+*.pem
+*.key
+*.crt
+
+# Fichiers de variables d'environnement (contiennent mots de passe)
+.env
+.env.local
+.secret
+
+### 🐍 PYTHON & DJANGO
+# Fichiers compilés et cache Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Environnements virtuels
+venv/
+env/
+ENV/
+
+# Dossiers générés par Django (recréés lors du déploiement)
+staticfiles/  # ⬅️ Correction ici : pas de / au début
+media/        # ⬅️ Ajout critique pour vos photos uploadées
+
+### 📁 FICHIERS SYSTÈME ET ÉDITEURS
+# Fichiers système
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs d'application
+*.log
+
+# Configuration d'éditeurs (PyCharm, VS Code, etc.)
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Packages Python temporaires
+*.egg
+*.egg-info/
+dist/
+build/

@@ -1,0 +1,704 @@
+{% load i18n %}
+<!DOCTYPE html>
+<html lang="{{ LANGUAGE_CODE }}" dir="{% if LANGUAGE_BIDI %}rtl{% else %}ltr{% endif %}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% trans "Carte Interactive" %} - DJAMAA.DZ</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
+    <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+
+    <style>
+        :root { --primary-green: #2e7d32; --dark-green: #1b5e20; }
+        body { font-family: 'Inter', sans-serif; background: #f8faf8; }
+        .navbar {
+            background: rgba(255, 255, 255, 0.9) !important;
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 100px;
+            padding: 0.6rem 1.5rem !important;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+            max-width: 1150px;
+            margin: 0 auto;
+        }
+        .navbar-container { position: fixed; top: 20px; left: 0; right: 0; z-index: 1050; padding: 0 15px; }
+        .date-stack {
+            font-size: 0.75rem; line-height: 1.2; border-left: 2px solid #eee;
+            padding-left: 15px; margin-left: 15px; display: flex; flex-direction: column; justify-content: center;
+        }
+
+        .nav-link:hover { background: rgba(46, 125, 50, 0.1); color: var(--primary-green) !important; }
+
+        .nav-admin-btn {
+            background: #fff5f5;
+            color: #e03131 !important;
+            border: 1px solid #ffc9c9;
+            margin-left: 10px;
+        }
+        .nav-admin-btn:hover { background: #e03131 !important; color: white !important; }
+
+
+        .nav-link { font-weight: 600; color: #333 !important; border-radius: 50px; padding: 0.6rem 1rem !important; font-size: 0.9rem; }
+        .carte-container { margin-top: 130px; padding-bottom: 50px; }
+        #map { height: 700px; border-radius: 25px; box-shadow: 0 15px 45px rgba(0,0,0,0.1); border: 2px solid #fff; z-index: 1; }
+
+        #autocomplete-results {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            max-height: 300px;
+            overflow-y: auto;
+            z-index: 2000; /* Très haut pour passer devant la carte */
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .autocomplete-item {
+            display: flex;
+            align-items: center;
+            padding: 10px 15px;
+            cursor: pointer;
+            border-bottom: 1px solid #f0f0f0;
+            color: #333;
+        }
+
+        .autocomplete-item:hover,
+        .autocomplete-item.active {
+            background: #e9ecef;
+            color: #000;
+        }
+
+        .autocomplete-flag {
+            font-size: 1.2em;
+            margin-right: 10px;
+            min-width: 30px;
+        }
+
+        .autocomplete-name {
+            flex: 1;
+            font-weight: 500;
+        }
+
+        .autocomplete-count {
+            color: #6c757d;
+            font-size: 0.85em;
+            background: #f1f3f5;
+            padding: 2px 8px;
+            border-radius: 10px;
+        }
+
+
+
+        .control-panel { background: white; border-radius: 20px; padding: 1.5rem; border: 1px solid #eee; height: 100%; box-shadow: 0 4px 12px rgba(0,0,0,0.03); }
+        .stat-card { background: linear-gradient(135deg, var(--primary-green) 0%, var(--dark-green) 100%); color: white; padding: 1.5rem; border-radius: 20px; text-align: center; }
+    </style>
+</head>
+<body>
+
+    <div class="navbar-container">
+        <nav class="navbar navbar-expand-lg">
+            <div class="container-fluid">
+                <a class="navbar-brand fw-bold d-flex align-items-center" href="/" style="color: var(--primary-green);">
+                    <i class="bi bi-mosque-fill me-2"></i>
+                    <span>DJAMAA<span class="text-dark">.DZ</span></span>
+                </a>
+                <div class="date-stack d-none d-lg-flex">
+                    <div class="text-muted small"><i class="bi bi-calendar3 me-1"></i> <span id="nav-date-gregorian"></span></div>
+                    <div class="text-success fw-bold small"><i class="bi bi-moon-stars-fill me-1"></i> <span id="nav-date-hijri"></span></div>
+                </div>
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav ms-auto align-items-center">
+                        <li class="nav-item"><a class="nav-link" href="{% url 'home' %}"><i class="bi bi-house-door me-1"></i> {% trans "Accueil" %}</a></li>
+                        <li class="nav-item"><a class="nav-link" href="{% url 'proposer' %}"><i class="bi bi-map me-1"></i> {% trans "Proposition" %}</a></li>
+                        <li class="nav-item"><a class="nav-link" href="{% url 'panorama' %}"><i class="bi bi-geo-alt me-1"></i> {% trans "Panorama" %}</a></li>
+                        {% if user.is_staff %}
+                            <li class="nav-item">
+                                <a class="nav-link nav-admin-btn" href="{% url 'admin:index' %}">
+                                    <i class="bi bi-shield-lock me-1"></i> {% trans "Administrateur" %}
+                                </a>
+                            </li>
+                        {% endif %}
+                        {% get_current_language as CURRENT_LANG %}
+
+                        <li class="nav-item dropdown ms-lg-2">
+                            <a class="nav-link dropdown-toggle shadow-sm" href="#" id="langDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false"
+                               style="background: #2e7d32; color: white !important; border-radius: 50px; padding: 5px 12px !important; font-size: 0.85rem; font-weight: bold; display: inline-flex; align-items: center; border: none;">
+
+                                <i class="bi bi-translate me-2"></i>
+
+                                <span>
+                                     {% if CURRENT_LANG == 'ar' %}
+                                        AR 🇩🇿
+                                    {% elif CURRENT_LANG == 'en' %}
+                                         EN 🇬🇧
+                                    {% else %}
+                                         FR 🇫🇷
+                                    {% endif %}
+                                </span>
+                            </a>
+
+                            <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0 mt-2" aria-labelledby="langDropdown" style="border-radius: 12px; min-width: 150px;">
+                                <li>
+                                    <form action="{% url 'set_language' %}" method="post" class="m-0">
+                                        {% csrf_token %}
+                                        <input name="next" type="hidden" value="{{ request.get_full_path }}">
+                                        <button type="submit" name="language" value="fr" class="dropdown-item d-flex justify-content-between {% if CURRENT_LANG == 'fr' %}fw-bold text-success{% endif %}">
+                                            <span>Français</span> {% if CURRENT_LANG == 'fr' %}✓{% endif %}
+                                        </button>
+                                    </form>
+                                </li>
+                                <li>
+                                    <form action="{% url 'set_language' %}" method="post" class="m-0">
+                                        {% csrf_token %}
+                                        <input name="next" type="hidden" value="{{ request.get_full_path }}">
+                                        <button type="submit" name="language" value="ar" class="dropdown-item d-flex justify-content-between text-end {% if CURRENT_LANG == 'ar' %}fw-bold text-success{% endif %}">
+                                            {% if CURRENT_LANG == 'ar' %}✓{% endif %} <span>العربية</span>
+                                        </button>
+                                    </form>
+                                </li>
+                                <li>
+                                    <form action="{% url 'set_language' %}" method="post" class="m-0">
+                                        {% csrf_token %}
+                                        <input name="next" type="hidden" value="{{ request.get_full_path }}">
+                                        <button type="submit" name="language" value="en" class="dropdown-item d-flex justify-content-between {% if CURRENT_LANG == 'en' %}fw-bold text-success{% endif %}">
+                                            <span>English</span> {% if CURRENT_LANG == 'en' %}✓{% endif %}
+                                        </button>
+                                    </form>
+                                </li>
+                            </ul>
+                        </li>
+
+
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </div>
+
+    <div class="carte-container">
+        <div class="container">
+            <div class="row mb-4 align-items-center">
+                <div class="col-md-8">
+                    <h1 class="fw-bold" style="color: var(--dark-green);">{% trans "Exploration des Mosquées" %}</h1>
+                </div>
+                <div class="col-md-4">
+                    <div class="stat-card shadow-sm">
+                        <span class="d-block h2 fw-bold mb-0">{{ total_mosques }}</span>
+                        <span class="small opacity-75">{% trans "Mosquées indexées" %}</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row mb-4 g-3">
+
+                <div class="col-md-4">
+                    <div class="control-panel position-relative">
+                        <label class="fw-bold mb-2 d-block"><i class="bi bi-globe"></i> {% trans "Pays" %}</label>
+
+                        <input type="text"
+                               id="search-country-autocomplete"
+                               class="form-control border-0 bg-light py-2"
+                               placeholder="{% trans 'Rechercher un pays (ex: Alg...)' %}"
+                               autocomplete="off">
+
+                        <div id="autocomplete-results" class="autocomplete-suggestions d-none shadow-sm border"></div>
+
+                        <div id="wilaya-filter-container" class="mt-3 d-none">
+                            <label class="fw-bold mb-2 d-block"><i class="bi bi-geo-alt"></i> {% trans "Wilaya" %}
+                            </label>
+                            <select class="form-select border-0 bg-light py-2" id="wilayaFilter">
+                                <option value="all">{% trans "Toutes les Wilayas" %}</option>
+                                {% for wilaya in wilayas %}
+                                    <option value="{{ wilaya.code }}">{{ wilaya.code }} - {{ wilaya.name_fr }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="control-panel">
+                        <label class="fw-bold mb-3 d-block"><i class="bi bi-compass"></i> {% trans "Navigation" %}</label>
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-success w-100" onclick="zoomToWorld()">{% trans "Monde" %}</button>
+                            <button class="btn btn-outline-success w-100" onclick="locateUser()">{% trans "Ma position" %}</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row"><div class="col-12"><div id="map"></div></div></div>
+        </div>
+
+        <!-- Ajoutez cette ligne n'importe où -->
+        <div id="debug" style="display:none">{{ countries_json }}</div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+
+        // 1. GESTION DES DATES
+        function updateNavDates() {
+            const today = new Date();
+            const lang = "{{ LANGUAGE_CODE }}" || "fr";
+
+            // 1. DATE GRÉGORIENNE
+            const gregElem = document.getElementById('nav-date-gregorian');
+            if (gregElem) {
+                gregElem.innerHTML = today.toLocaleDateString(lang, {
+                    weekday: 'long',
+                    day: 'numeric',
+                    month: 'long',
+                    year: 'numeric'
+                });
+            }
+
+            // 2. DATE HIJRI (API précise en arabe)
+            const hijriElem = document.getElementById('nav-date-hijri');
+            if (!hijriElem) return;
+
+            const yyyy = today.getFullYear();
+            const mm = String(today.getMonth() + 1).padStart(2, '0');
+            const dd = String(today.getDate()).padStart(2, '0');
+
+            // Fonction asynchrone pour l'API
+            async function fetchHijriDate() {
+                try {
+                    const response = await fetch(`https://api.aladhan.com/v1/gToH?date=${dd}-${mm}-${yyyy}`);
+                    const data = await response.json();
+                    if (data.code === 200) {
+                        const hijri = data.data.hijri;
+                        hijriElem.innerHTML = `${hijri.day} ${hijri.month.ar} ${hijri.year} هـ`;
+                        hijriElem.dir = "rtl";
+                        hijriElem.style.fontFamily = "'Segoe UI', Arial, sans-serif";
+                        return;
+                    }
+                } catch (error) {
+                    console.log("API hijri échouée, utilisant fallback");
+                }
+
+                // FALLBACK si API échoue (votre calcul original converti en arabe)
+                const hijriMonthsAr = ["محرم", "صفر", "ربيع الأول", "ربيع الثاني", "جمادى الأولى", "جمادى الآخرة", "رجب", "شعبان", "رمضان", "شوال", "ذو القعدة", "ذو الحجة"];
+
+                // Votre calcul hijri original
+                let jd = Math.floor(today.getTime() / 86400000) + 2440587.5;
+                let l = jd - 1948440 + 10632;
+                let n = Math.floor((l - 1) / 10631);
+                l = l - 10631 * n + 354;
+                let j = (Math.floor((10985 - l) / 5316)) * (Math.floor((50 * l + 2450) / 17719)) + (Math.floor(l / 5670)) * (Math.floor((43 * l + 242) / 15242));
+                l = l - (Math.floor((30 - j) / 15)) * (Math.floor((17719 * j + 25) / 50)) - (Math.floor(j / 16)) * (Math.floor((15242 * j - 24) / 43)) + 29;
+                let m = Math.floor(24 * l / 709);
+                let d = l - Math.floor(709 * m / 24);
+                let y = 30 * n + j - 30;
+
+                hijriElem.innerHTML = d + " " + hijriMonthsAr[m - 1] + " " + y + " هـ";
+                hijriElem.dir = "rtl";
+            }
+
+            fetchHijriDate();
+        }
+
+
+        // 2. INITIALISATION CARTE ET CLUSTERS
+        const mosquesData = {{ mosques_data|safe }};
+        const map = L.map('map').setView([28.0339, 1.6596], 6);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+
+        // UNE SEULE DÉCLARATION POUR LES CLUSTERS
+        const markersClusterGroup = L.markerClusterGroup({ maxClusterRadius: 50 });
+
+        function getPopupHTML(m) {
+            return `<div style="text-align: center;"><h5>${m.name}</h5><p>${m.city}</p><a href="/mosquee/${m.id}/" class="btn btn-sm btn-success text-white">{% trans "Voir l'affiche détaillée" %}</a></div>`;
+        }
+
+        function displayMarkers(data) {
+            markersClusterGroup.clearLayers();
+            data.forEach(m => {
+                if (m.latitude && m.longitude) {
+                    const marker = L.marker([m.latitude, m.longitude]).bindPopup(getPopupHTML(m));
+                    markersClusterGroup.addLayer(marker);
+                }
+            });
+            map.addLayer(markersClusterGroup);
+        }
+
+        function locateUser() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(pos => {
+                    const lat = pos.coords.latitude, lng = pos.coords.longitude;
+                    L.circleMarker([lat, lng], { radius: 8, color: 'red' }).addTo(map);
+                    map.setView([lat, lng], 13);
+                });
+            }
+        }
+        // Fonction pour dézoomer sur le monde
+        function zoomToWorld() {
+            // 1️⃣ Reset carte
+            map.setView([20, 0], 2);
+
+            // 2️⃣ Réafficher TOUS les marqueurs
+            displayMarkers(mosquesData);
+
+            // 3️⃣ Vider le champ Pays (autocomplete)
+            const countryInput = document.getElementById('search-country-autocomplete');
+            if (countryInput) {
+                countryInput.value = '';
+            }
+
+            // 4️⃣ Cacher et reset le filtre Wilaya
+            const wilayaContainer = document.getElementById('wilaya-filter-container');
+            const wilayaSelect = document.getElementById('wilayaFilter');
+
+            if (wilayaContainer) {
+                wilayaContainer.classList.add('d-none');
+            }
+
+            if (wilayaSelect) {
+                wilayaSelect.value = 'all';
+            }
+
+            // 5️⃣ Fermer l'autocomplete si ouvert
+            const autocomplete = document.getElementById('autocomplete-results');
+            if (autocomplete) {
+                autocomplete.classList.add('d-none');
+            }
+
+            // 6️⃣ RESET TOTAL : aucun pays actif
+            window.currentCountryCode = null;
+        }
+
+
+        // --- NOUVELLES FONCTIONS DE FILTRAGE APPELÉES PAR L'AUTOCOMPLÉTION ---
+
+        window.filterMarkersByCountry = function (countryCode) {
+            let filtered = [];
+
+            if (countryCode === 'all') {
+                // Tout afficher
+                filtered = mosquesData;
+                map.setView([20, 0], 2);
+            } else {
+                // Filtrer par pays
+                filtered = mosquesData.filter(m => m.country_code === countryCode);
+
+                // Si Algérie, on cache tout d'abord (wilaya pas encore sélectionnée)
+                //if (countryCode === 'DZ') {
+                 //   filtered = []; // Cache tout tant que wilaya pas choisie
+                //}
+            }
+
+            displayMarkers(filtered);
+
+            if (filtered.length > 0) {
+                map.setView([filtered[0].latitude, filtered[0].longitude], 6);
+            }
+        };
+
+        window.filterMarkersByWilaya = function (wilayaId) {
+            let filtered = mosquesData.filter(m => m.country_code === 'DZ');
+
+            if (wilayaId !== 'all') {
+                filtered = filtered.filter(m => m.wilaya_id == wilayaId);
+            }
+
+            displayMarkers(filtered);
+
+            if (filtered.length > 0) {
+                map.setView([filtered[0].latitude, filtered[0].longitude], 10);
+            }
+        };
+
+        let currentFocus = -1;
+        let currentContinent = 'all';
+        window.countriesData = JSON.parse('{{ countries_json|escapejs }}');
+
+
+        // ========== FONCTIONS AUTOCOMPLETE ==========
+        function findMatches(wordToMatch, countries) {
+            if (!wordToMatch || !countries) return [];
+
+            // 1. On prépare la recherche (minuscules et sans accents)
+            const searchNormalized = wordToMatch
+                .toLowerCase()
+                .normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+
+            return countries.filter(country => {
+                if (!country) return false;
+
+                // Fonction interne pour nettoyer chaque nom de pays (minuscules + sans accents)
+                const normalizeString = (str) => {
+                    if (!str) return '';
+                    return str
+                        .toLowerCase()
+                        .normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+                };
+
+                const nameFrNorm = normalizeString(country.name_fr);
+                const nameArNorm = normalizeString(country.name_ar);
+                const nameEnNorm = normalizeString(country.name_en);
+
+                // --- LOGIQUE DE RECHERCHE CORRIGÉE ---
+
+                // A. Pour l'Arabe : On gère l'article "ال" (Al-)
+                // On permet de trouver "الجزائر" même si on tape "جزا"
+                const cleanAr = (str) => str.replace(/^ال/, '');
+                const matchAr = nameArNorm.startsWith(searchNormalized) ||
+                    cleanAr(nameArNorm).startsWith(cleanAr(searchNormalized));
+
+                // B. Pour le Français et l'Anglais : Stricte AU DÉBUT (startsWith)
+                // On remplace .includes() par .startsWith() pour être plus précis
+                const matchFr = nameFrNorm.startsWith(searchNormalized);
+                const matchEn = nameEnNorm.startsWith(searchNormalized);
+
+                // C. Code pays (ex: "DZ")
+                const matchCode = (country.code && country.code.toLowerCase() === searchNormalized);
+
+                // On retourne 'true' si le pays commence par la recherche dans l'une des langues
+                return matchFr || matchEn || matchAr || matchCode;
+            });
+        }
+
+        function displayMatches(inputValue) {
+            const resultsDiv = document.getElementById('autocomplete-results');
+            if (!inputValue || inputValue.length < 1) {
+                resultsDiv.classList.add('d-none');
+                return;
+            }
+
+            const matchArray = findMatches(inputValue, window.countriesData || []);
+
+            if (matchArray.length === 0) {
+                resultsDiv.innerHTML = '<div class="autocomplete-item text-muted p-3 text-center">Aucun pays trouvé</div>';
+                resultsDiv.classList.remove('d-none');
+                return;
+            }
+
+            const suggestions = matchArray.slice(0, 8);
+            let html = '';
+
+            const searchLower = inputValue.toLowerCase();
+
+            const isArabicInput = /[\u0600-\u06FF]/.test(inputValue);
+
+            const htmlLang = document.documentElement.lang || 'fr';
+            const isEnglishSite = htmlLang === 'en';
+
+            const cleanAr = (str) => str ? str.replace(/^ال/, '') : '';
+
+            suggestions.forEach((country, index) => {
+                let countryNameDisplay = "";
+
+                // 1. Définition des constantes de comparaison (INDISPENSABLE)
+                const nameAr = (country.name_ar || "").toLowerCase();
+                const nameEn = (country.name_en || "").toLowerCase();
+                const nameFr = (country.name_fr || "").toLowerCase();
+
+                // 2. Vérification des correspondances
+                const matchAr = nameAr.startsWith(searchLower) || cleanAr(nameAr).startsWith(cleanAr(searchLower));
+                const matchEn = nameEn.startsWith(searchLower);
+                const matchFr = nameFr.startsWith(searchLower);
+
+                // 3. Logique de priorité corrigée
+                if (isArabicInput) {
+                    countryNameDisplay = country.name_ar || country.name_fr;
+                } else if (isEnglishSite && matchEn) {
+                    // Ici, si on tape "alg" en mode anglais, il choisira "Algeria"
+                    countryNameDisplay = country.name_en;
+                } else if (matchFr) {
+                    // Sinon on privilégie le français
+                    countryNameDisplay = country.name_fr;
+                } else if (matchEn) {
+                    // Fallback anglais
+                    countryNameDisplay = country.name_en;
+                } else {
+                    // Fallback final
+                    countryNameDisplay = country.name_fr;
+                }
+
+                html += `
+            <div class="autocomplete-item ${index === 0 ? 'active' : ''}"
+                data-index="${index}"
+                data-country-code="${country.code || ''}"
+                data-country-name="${countryNameDisplay}"
+                onmouseenter="setActiveSuggestion(${index})"
+                onclick="selectSuggestion(this)">
+                <div class="autocomplete-flag">${country.flag || '🏳️'}</div>
+                <div class="autocomplete-name">${countryNameDisplay}</div>
+                <div class="autocomplete-count">${country.mosque_count || 0}</div>
+            </div>`;
+            });
+
+            resultsDiv.innerHTML = html;
+            resultsDiv.classList.remove('d-none');
+            currentFocus = 0;
+        }
+
+        function setActiveSuggestion(index) {
+            document.querySelectorAll('.autocomplete-item').forEach((item, i) => {
+                item.classList.toggle('active', i === index);
+            });
+            currentFocus = index;
+        }
+
+        function selectSuggestion(item) {
+            const code = item.getAttribute('data-country-code');
+            const name = item.getAttribute('data-country-name');
+            const input = document.getElementById('search-country-autocomplete');
+            const wilayaContainer = document.getElementById('wilaya-filter-container');
+
+            if (input && name) {
+                input.value = name;
+            }
+
+            document.getElementById('autocomplete-results').classList.add('d-none');
+            const wilayaSelect = document.getElementById('wilayaFilter');
+
+            const isArabic = /[\u0600-\u06FF]/.test(name);
+            const currentViewLang = isArabic ? 'ar' : "{{ LANGUAGE_CODE }}";
+
+            if (code === 'DZ') {
+                console.log("=== DIAGNOSTIC WILAYAS ===");
+                console.log("1. Nom sélectionné:", name);
+                console.log("2. Code:", code);
+                console.log("3. isArabic?", isArabic);
+                console.log("4. currentViewLang:", currentViewLang);
+                console.log("5. LANGUAGE_CODE:", "{{ LANGUAGE_CODE }}");
+
+                if (wilayaContainer) wilayaContainer.classList.remove('d-none');
+
+                // API CALL CORRIGÉE
+                fetch(`/get_wilayas/`)
+                    .then(response => {
+                        console.log("6. Réponse API status:", response.status);
+                        return response.json();
+                    })
+                    .then(data => {
+                        console.log("7. Données wilayas reçues:", data.length, "wilayas");
+                        if (data.length > 0) {
+                            console.log("8. Exemple première wilaya:", data[0]);
+                            console.log("9. Contient name_ar?", 'name_ar' in data[0]);
+                            console.log("10. name_ar valeur:", data[0].name_ar);
+                        }
+
+                        // CORRECTION: currentViewLang au lieu de 'lang'
+                        let allLabel = (currentViewLang === 'ar') ? "كل الولايات" :
+                            (currentViewLang === 'en' ? "All Wilayas" : "Toutes les Wilayas");
+                        let options = `<option value="all">${allLabel}</option>`;
+
+                        data.forEach(w => {
+                            let wName = w.name_fr;
+                            if (currentViewLang === 'ar') wName = w.name_ar || w.name_fr;
+                            else if (currentViewLang === 'en') wName = w.name_en || w.name_fr;
+
+                            // ✅ IMPORTANT : value = CODE et non ID
+                            options += `<option value="${w.code}">${w.code} - ${wName}</option>`;
+                        });
+
+                        if (wilayaSelect) wilayaSelect.innerHTML = options;
+                    })
+                    .catch(error => console.error("11. Erreur fetch:", error));
+
+                if (typeof window.filterMarkersByCountry === 'function') {
+                    window.filterMarkersByCountry('DZ');
+                }
+            } else {
+                if (wilayaContainer) wilayaContainer.classList.add('d-none');
+                if (typeof window.filterMarkersByCountry === 'function') {
+                    window.filterMarkersByCountry(code);
+                }
+            }
+        }
+
+        // Écouteur pour le changement de Wilaya
+        document.addEventListener('DOMContentLoaded', () => {
+            const wilayaSelect = document.getElementById('wilayaFilter');
+            if (wilayaSelect) {
+                wilayaSelect.addEventListener('change', function() {
+                    if (typeof window.filterMarkersByWilaya === 'function') {
+                        window.filterMarkersByWilaya(this.value);
+                    }
+                });
+            }
+        });
+
+        function closeAutocomplete() {
+            document.getElementById('autocomplete-results').classList.add('d-none');
+            currentFocus = -1;
+        }
+
+        function handleKeyNavigation(e) {
+            const resultsDiv = document.getElementById('autocomplete-results');
+            const items = resultsDiv.querySelectorAll('.autocomplete-item');
+
+            if (resultsDiv.classList.contains('d-none') || items.length === 0) return;
+
+            switch (e.key) {
+                case 'ArrowDown':
+                    e.preventDefault();
+                    currentFocus = (currentFocus + 1) % items.length;
+                    setActiveSuggestion(currentFocus);
+                    break;
+                case 'ArrowUp':
+                    e.preventDefault();
+                    currentFocus = (currentFocus - 1 + items.length) % items.length;
+                    setActiveSuggestion(currentFocus);
+                    break;
+                case 'Enter':
+                    e.preventDefault();
+                    if (currentFocus >= 0 && currentFocus < items.length) {
+                        selectSuggestion(items[currentFocus]);
+                    }
+                    break;
+                case 'Escape':
+                    closeAutocomplete();
+                    break;
+            }
+        }
+
+        // ========== ÉVÉNEMENTS ==========
+        document.addEventListener('DOMContentLoaded', () => {
+            const input = document.getElementById('search-country-autocomplete');
+            if (input) {
+                let timeout;
+                input.addEventListener('input', function () {
+                    clearTimeout(timeout);
+                    timeout = setTimeout(() => {
+                        displayMatches(this.value);
+                    }, 150);
+                });
+
+                input.addEventListener('keydown', handleKeyNavigation);
+
+                input.addEventListener('focus', function () {
+                    if (this.value.length >= 3) {
+                        displayMatches(this.value);
+                    }
+                });
+            }
+
+            document.addEventListener('click', function (e) {
+                if (!e.target.closest('.position-relative')) {
+                    closeAutocomplete();
+                }
+            });
+        });
+
+
+
+        // LANCEMENT INITIAL
+        updateNavDates();
+        displayMarkers(mosquesData);
+
+    </script>
+</body>
+</html>

@@ -1,0 +1,748 @@
+{% load i18n %}
+<!DOCTYPE html>
+<html lang="{{ LANGUAGE_CODE }}" dir="{% if LANGUAGE_BIDI %}rtl{% else %}ltr{% endif %}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% trans "Proposer une mosquée" %} - DJAMAA.DZ</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <style>
+        :root { --primary-green: #2e7d32; --dark-green: #1b5e20; }
+        body { background-color: #f8faf8; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+
+
+
+        /* --- NAVBAR --- */
+        .navbar {
+            background: rgba(255, 255, 255, 0.9) !important;
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 100px;
+            padding: 0.6rem 1.5rem !important;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+            max-width: 1150px;
+            margin: 0 auto;
+        }
+        .navbar-container { position: fixed; top: 20px; left: 0; right: 0; z-index: 1050; padding: 0 15px; }
+
+        .nav-admin-btn {
+            background: #fff5f5;
+            color: #e03131 !important;
+            border: 1px solid #ffc9c9;
+            margin-left: 10px;
+        }
+        .nav-admin-btn:hover { background: #e03131 !important; color: white !important; }
+
+        .date-stack {
+            font-size: 0.75rem; line-height: 1.2; border-left: 2px solid #eee;
+            padding-left: 15px; margin-left: 15px; display: flex; flex-direction: column; justify-content: center;
+        }
+
+        /* --- FORMULAIRE & STYLE --- */
+        .form-card { border: none; border-radius: 2rem; box-shadow: 0 15px 50px rgba(0,0,0,0.06); background: white; }
+        .section-title { display: flex; align-items: center; color: var(--primary-green); font-weight: 800; margin: 2.5rem 0 1.5rem 0; font-size: 1.25rem; text-transform: uppercase; }
+        .section-title i { background: rgba(46, 125, 50, 0.1); width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border-radius: 10px; margin-right: 12px; }
+
+        textarea[name="description"], textarea[name="history"] {
+            width: 100% !important; border: 2px solid #ced4da !important; border-radius: 10px !important; resize: none !important; padding: 15px !important;
+        }
+        textarea[name="description"] { height: 90px !important; }
+        textarea[name="history"] { height: 220px !important; }
+
+        input[type="text"], input[type="email"], select, textarea {
+            border: 2px solid #edf2ef !important; border-radius: 12px !important; padding: 12px 18px !important; background-color: #fafafa !important;
+            width: 100%;
+        }
+        /* Miniatures des photos */
+        .photo-preview-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 15px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border: 1px dashed #dee2e6;
+        }
+
+        .photo-preview {
+            position: relative;
+            width: 100px;
+            height: 100px;
+        }
+
+        .photo-preview img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 5px;
+            border: 2px solid #adb5bd;
+        }
+
+        .remove-photo {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: #dc3545;
+            color: white;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            border: none;
+            cursor: pointer;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .remove-photo:hover {
+            background: #c82333;
+        }
+
+        /* Alerte limite photos */
+        .photo-limit-alert {
+            animation: shake 0.5s;
+        }
+
+        @keyframes shake {
+            0%, 100% {
+                transform: translateX(0);
+            }
+            25% {
+                transform: translateX(-5px);
+            }
+            75% {
+                transform: translateX(5px);
+            }
+        }
+
+        .custom-file-input {
+            position: relative;
+            overflow: hidden;
+            border: 2px dashed #2e7d32;
+            border-radius: 12px;
+            background: #f0f9f0;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+        }
+
+        .custom-file-input input[type="file"] {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        .file-input-label {
+            color: #2e7d32;
+            font-weight: 600;
+            display: block;
+            padding: 10px;
+        }
+
+        .photo-upload-box {
+            border: 2px dashed #dce4de; border-radius: 15px; padding: 25px; text-align: center; background: #ffffff;
+        }
+
+        .btn-submit { background: var(--primary-green); border: none; border-radius: 50px; padding: 1.2rem; font-weight: 700; color: white; transition: 0.4s; width: 100%; }
+        .btn-submit:hover { background: var(--dark-green); transform: translateY(-2px); }
+
+        .nav-link { font-weight: 600; color: #333 !important; padding: 0.6rem 1rem !important; border-radius: 50px; transition: 0.3s; font-size: 0.9rem; }
+        .nav-link:hover { background: rgba(46, 125, 50, 0.1); color: var(--primary-green) !important; }
+
+        /* Style pour l'astérisque rouge */
+        .text-danger { color: #e03131 !important; font-weight: bold; }
+
+        /* Cacher le champ international par défaut */
+        #field-international { display: none; }
+    </style>
+</head>
+<body>
+
+    <div class="navbar-container">
+        <nav class="navbar navbar-expand-lg">
+            <div class="container-fluid">
+                <a class="navbar-brand fw-bold d-flex align-items-center" href="/" style="color: var(--primary-green);">
+                    <i class="bi bi-mosque-fill me-2"></i>
+                    <span>DJAMAA<span class="text-dark">.DZ</span></span>
+                </a>
+
+                <div class="date-stack d-none d-lg-flex">
+                    <div class="text-muted small">
+                        <i class="bi bi-calendar3 me-1"></i>
+                        <span id="nav-date-gregorian">--</span> </div>
+                    <div class="text-success fw-bold small">
+                        <i class="bi bi-moon-stars-fill me-1"></i>
+                        <span id="nav-date-hijri">--</span> </div>
+                </div>
+
+                <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav ms-auto align-items-center">
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'home' %}">
+                                <i class="bi bi-house-door me-1"></i>
+                                {% trans "Accueil" %}
+                            </a>
+                        </li>
+                        <li class="nav-item"><a class="nav-link" href="{% url 'carte' %}"><i class="bi bi-map me-1"></i> {% trans "Carte" %}</a></li>
+                        <li class="nav-item"><a class="nav-link" href="{% url 'panorama' %}"><i class="bi bi-geo-alt me-1"></i> {% trans "Panorama" %}</a></li>
+
+                        {% if user.is_staff %}
+                            <li class="nav-item">
+                                <a class="nav-link nav-admin-btn" href="{% url 'admin:index' %}">
+                                    <i class="bi bi-shield-lock me-1"></i> {% trans "Administrateur" %}
+                                </a>
+                            </li>
+                        {% endif %}
+
+                        {% get_current_language as CURRENT_LANG %}
+
+                        <li class="nav-item dropdown ms-lg-2">
+                            <a class="nav-link dropdown-toggle shadow-sm" href="#" id="langDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false"
+                               style="background: #2e7d32; color: white !important; border-radius: 50px; padding: 5px 12px !important; font-size: 0.85rem; font-weight: bold; display: inline-flex; align-items: center; border: none;">
+                                <i class="bi bi-translate me-2"></i>
+                                <span>
+                                     {% if CURRENT_LANG == 'ar' %} AR 🇩🇿 {% elif CURRENT_LANG == 'en' %} EN 🇬🇧 {% else %} FR 🇫🇷 {% endif %}
+                                </span>
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0 mt-2" aria-labelledby="langDropdown" style="border-radius: 12px; min-width: 150px;">
+                                <li>
+                                    <form action="{% url 'set_language' %}" method="post" class="m-0">
+                                        {% csrf_token %}
+                                        <input name="next" type="hidden" value="{{ request.get_full_path }}">
+                                        <button type="submit" name="language" value="fr" class="dropdown-item d-flex justify-content-between {% if CURRENT_LANG == 'fr' %}fw-bold text-success{% endif %}">
+                                            <span>Français</span> {% if CURRENT_LANG == 'fr' %}✓{% endif %}
+                                        </button>
+                                    </form>
+                                </li>
+                                <li>
+                                    <form action="{% url 'set_language' %}" method="post" class="m-0">
+                                        {% csrf_token %}
+                                        <input name="next" type="hidden" value="{{ request.get_full_path }}">
+                                        <button type="submit" name="language" value="ar" class="dropdown-item d-flex justify-content-between text-end {% if CURRENT_LANG == 'ar' %}fw-bold text-success{% endif %}">
+                                            {% if CURRENT_LANG == 'ar' %}✓{% endif %} <span>العربية</span>
+                                        </button>
+                                    </form>
+                                </li>
+                                <li>
+                                    <form action="{% url 'set_language' %}" method="post" class="m-0">
+                                        {% csrf_token %}
+                                        <input name="next" type="hidden" value="{{ request.get_full_path }}">
+                                        <button type="submit" name="language" value="en" class="dropdown-item d-flex justify-content-between {% if CURRENT_LANG == 'en' %}fw-bold text-success{% endif %}">
+                                            <span>English</span> {% if CURRENT_LANG == 'en' %}✓{% endif %}
+                                        </button>
+                                    </form>
+                                </li>
+                            </ul>
+                        </li>
+
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </div>
+
+    <!-- MESSAGES -->
+    <div class="container" style="margin-top: 100px; padding-top: 20px;">
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+                    {{ message|safe }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    </div>
+
+
+    <div style="margin-top: 120px;"></div>
+
+    <div class="container py-5">
+        <div class="row justify-content-center">
+            <div class="col-lg-10 col-xl-9">
+                <div class="text-center mb-5">
+                    <h1 class="display-5 fw-bold" style="color: #1a1a1a;">|🕌 {% trans "Proposer une mosquée" %}</h1>
+                    <p class="text-muted mx-auto" style="max-width: 500px;">{% trans "Aidez-nous à référencer les mosquées." %}</p>
+                </div>
+
+                <div class="row g-3 mb-5 text-center">
+                    <div class="col-4">
+                        <div class="bg-white p-3 border rounded shadow-sm">
+                            <div class="h3 fw-bold text-success mb-0">{{ stats.total_mosques }}</div>
+                            <div class="small text-muted text-uppercase fw-semibold">{% trans "Publiées" %}</div>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="bg-white p-3 border rounded shadow-sm">
+                            <div class="h3 fw-bold text-warning mb-0">{{ stats.propositions_en_attente }}</div>
+                            <div class="small text-muted text-uppercase fw-semibold">{% trans "En examen" %}</div>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="bg-white p-3 border rounded shadow-sm">
+                            <div class="h3 fw-bold text-primary mb-0">{{ stats.total_propositions }}</div>
+                            <div class="small text-muted text-uppercase fw-semibold">{% trans "Total" %}</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card form-card">
+                    <div class="card-body p-4 p-md-5">
+                        <form method="post" enctype="multipart/form-data">
+                            {% csrf_token %}
+
+                            <h4 class="section-title"><i class="bi bi-geo-alt-fill"></i>{% trans "Localisation" %}</h4>
+
+                            <div class="row mb-4">
+                                <div class="col-md-12">
+                                    <label class="fw-bold mb-2">{% trans "Pays" %} <span class="text-danger">*</span></label>
+                                    <input type="text" name="country" id="id_country" class="form-control"
+                                                placeholder="Algérie, France, etc." required
+                                                autocapitalize="words">
+                                </div>
+                            </div>
+
+                            <div class="row g-4 mb-4">
+                                <div class="col-md-6">
+                                    <label class="fw-bold mb-2">{% trans "Nom de la mosquée" %} <span class="text-danger">*</span></label>
+                                    {{ form.name }}
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="fw-bold mb-2">{% trans "Adresse" %} <span class="text-danger">*</span></label>
+                                    {{ form.address }}
+                                </div>
+                            </div>
+
+                            <div class="row mb-4 g-4">
+                                <div class="col-md-6">
+                                    <label class="fw-bold mb-2">{% trans "Commune / Ville" %} <span class="text-danger">*</span></label>
+                                    {{ form.city }}
+                                </div>
+
+                                <div class="col-md-6" id="field-algeria">
+                                    <label class="fw-bold mb-2">{% trans "Wilaya" %} <span class="text-danger">*</span></label>
+                                    {{ form.wilaya }}
+                                </div>
+
+                                <div class="col-md-6" id="field-international">
+                                    <label class="fw-bold mb-2">{% trans "Province / Région / État" %} <span class="text-danger">*</span></label>
+                                    <input type="text" name="international_region" id="id_international_region" class="form-control" placeholder="Ex: Île-de-France, Québec...">
+                                </div>
+                            </div>
+
+
+                            <div class="row g-4 mb-4">
+                                <div class="col-md-6">
+                                    <label class="fw-bold mb-2">{% trans "Latitude" %} </label>
+                                    <input type="text" name="latitude" id="id_latitude" class="form-control"
+                                           placeholder="Ex: 36.752887 (utilisez un point, non pas une virgule)" required
+                                           pattern="-?\d{1,3}\.\d{1,8}" title="Format: 36.752887 - Utilisez un point .">
+                                    <small class="text-muted">Coordonnée Nord/Sud (utilisez un point .)</small>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="fw-bold mb-2">{% trans "Longitude" %} </label>
+                                    <input type="text" name="longitude" id="id_longitude" class="form-control"
+                                            placeholder="Ex: 3.042048 (utilisez un point, non pas une virgule)" required
+                                            pattern="-?\d{1,3}\.\d{1,8}" title="Format: 3.042048 - Utilisez un point .">
+                                    <small class="text-muted">Coordonnée Est/Ouest (utilisez un point .)</small>
+                                </div>
+                            </div>
+
+
+                            <h4 class="section-title"><i class="bi bi-card-text"></i> {% trans "Détails & Histoire" %}</h4>
+                            <div class="row">
+                                <div class="col-12 mb-4">
+                                    <label class="fw-bold mb-2 d-block">{% trans "Description générale" %} :</label>
+                                    {{ form.description }}
+                                </div>
+                                <div class="col-12 mb-4">
+                                    <label class="fw-bold mb-2 d-block">{% trans "Histoire ou particularités" %} :</label>
+                                    {{ form.history }}
+                                </div>
+                            </div>
+
+                            <h4 class="section-title"><i class="bi bi-images"></i> {% trans "Photos de la mosquée (Max 5)" %}</h4>
+                            <div class="photo-upload-box mb-4">
+                                <label for="images_mosquee" class="fw-bold d-block mb-3">
+                                    {% trans "Sélectionnez vos photos (jusqu'à 5 max)" %}
+                                </label>
+
+                                <!-- Conteneur pour styliser le bouton -->
+                                <div class="custom-file-input">
+                                    <!-- Le texte qui remplace "Sélectionner fichier(s)" -->
+                                    <span class="file-input-label">
+                                        <i class="bi bi-camera-fill me-2"></i>
+                                        {% trans "Cliquez ici pour sélectionner des photos" %}
+                                    </span>
+                                    <input type="file" name="photos" id="images_mosquee" class="form-control"
+                                           accept="image/*" multiple title="{% trans 'Sélectionner des photos' %}">
+                                </div>
+                                <div id="preview-container"
+                                     class="d-flex flex-wrap justify-content-center gap-3 mt-3">
+                                </div>
+                            </div>
+
+                            {% load i18n %}
+                            {% load honeypot %}
+
+                            <form method="post" enctype="multipart/form-data">
+                                {% csrf_token %}
+                                {% render_honeypot_field %}
+
+                                <h4 class="section-title"><i
+                                        class="bi bi-shield-check"></i>{% trans "Validation finale" %}</h4>
+
+                                <div class="p-4 rounded-4 border bg-light mb-4">
+                                    <div class="mb-4">
+                                        <label class="fw-bold mb-2">{% trans "Votre adresse e-mail" %}</label>
+                                        {{ form.contributor_email }}
+                                    </div>
+                                    <div class="form-check p-3 bg-white rounded-3 border-start border-4 border-success shadow-sm">
+                                        {{ form.confirmation }}
+                                        <label class="form-check-label fw-bold ms-2"
+                                               for="{{ form.confirmation.id_for_label }}">
+                                            {% trans "Je certifie l'exactitude des données transmises." %} <span
+                                                class="text-danger">*</span>
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <button type="submit" class="btn btn-submit shadow-lg">
+                                    <i class="bi bi-cloud-arrow-up-fill me-2"></i>{% trans "Soumettre ma proposition" %}
+                                </button>
+                            </form>
+
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="photoLimitModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg" style="border-radius: 20px;">
+                <div class="modal-body text-center p-5">
+                    <i class="bi bi-exclamation-octagon-fill text-danger" style="font-size: 4rem;"></i>
+                    <h3 class="fw-bold mt-4">{% trans "Trop de photos !" %}</h3>
+                    <p class="text-muted">{% trans "Vous avez sélectionné trop de photos." %}</p>
+                    <p class="text-muted"><strong>{% trans "Maximum 5 photos autorisées." %}</strong></p>
+                    <p class="text-muted small">{% trans "Veuillez re-sélectionner vos photos (5 maximum)." %}</p>
+                    <button type="button" class="btn btn-danger btn-lg rounded-pill px-5 mt-3" data-bs-dismiss="modal">
+                        {% trans "OK, je vais re-sélectionner" %}
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // --- FONCTION DATES ---
+        function updateNavDates() {
+            const today = new Date();
+            const lang = "{{ LANGUAGE_CODE }}" || "fr";
+
+            // 1. DATE GRÉGORIENNE
+            const gregOptions = {weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'};
+            const gregElem = document.getElementById('nav-date-gregorian');
+            if (gregElem) gregElem.innerHTML = today.toLocaleDateString(lang, gregOptions);
+
+            // 2. DATE HIJRI (API précise en arabe)
+            const hijriElem = document.getElementById('nav-date-hijri');
+            if (!hijriElem) return;
+
+            const yyyy = today.getFullYear();
+            const mm = String(today.getMonth() + 1).padStart(2, '0');
+            const dd = String(today.getDate()).padStart(2, '0');
+
+            // Fonction asynchrone pour l'API
+            async function fetchHijriDate() {
+                try {
+                    const response = await fetch(`https://api.aladhan.com/v1/gToH?date=${dd}-${mm}-${yyyy}`);
+                    const data = await response.json();
+                    if (data.code === 200) {
+                        const hijri = data.data.hijri;
+                        hijriElem.innerHTML = `${hijri.day} ${hijri.month.ar} ${hijri.year} هـ`;
+                        hijriElem.dir = "rtl";
+                        hijriElem.style.fontFamily = "'Segoe UI', Arial, sans-serif";
+                        return;
+                    }
+                } catch (error) {
+                    console.log("API hijri échouée, utilisant fallback");
+                }
+
+                // FALLBACK si API échoue (votre calcul original converti en arabe)
+                const hijriMonthsAr = ["محرم", "صفر", "ربيع الأول", "ربيع الثاني", "جمادى الأولى", "جمادى الآخرة", "رجب", "شعبان", "رمضان", "شوال", "ذو القعدة", "ذو الحجة"];
+
+                let day = today.getDate(), month = today.getMonth(), year = today.getFullYear();
+                if (year < 1900) year += 1900;
+                let m = month + 1, y = year;
+                if (m < 3) {
+                    y -= 1;
+                    m += 12;
+                }
+                let a = Math.floor(y / 100), b = 2 - a + Math.floor(a / 4);
+                let jd = Math.floor(365.25 * (y + 4716)) + Math.floor(30.6001 * (m + 1)) + day + b - 1524.5;
+                let z = Math.floor(jd + 0.5), cyc = Math.floor((z - 1948439.5) / 10631),
+                    l = z - 1948439.5 - cyc * 10631;
+                let j = Math.floor((l - 0.5) / 354.36667), h_year = cyc * 30 + j,
+                    r = l - Math.floor(j * 354.36667 + 0.5);
+                let h_month = Math.floor((r - 5) / 29.5);
+                if (h_month < 0) h_month = 0; else if (h_month > 11) h_month = 11;
+                let h_day = Math.floor(r - Math.floor(h_month * 29.5 + 0.5));
+
+                hijriElem.innerHTML = (h_day + 1) + " " + hijriMonthsAr[h_month] + " " + (h_year + 1401) + " هـ";
+                hijriElem.dir = "rtl";
+            }
+
+            fetchHijriDate();
+        }
+        // --- LOGIQUE PAYS / WILAYA ---
+        document.getElementById('id_country').addEventListener('input', function() {
+            const val = this.value.toLowerCase().trim();
+            const algeriaVariations = ['algerie', 'algérie', 'algeria', 'dz', 'alger', 'الجزائر', 'dzayer', 'Algerien',
+                'Algeria', 'Argelia', 'Argélia', 'Algeria', 'Algeriet', 'Algieria', 'Algeria'];
+
+            const algeriaBox = document.getElementById('field-algeria');
+            const internationalBox = document.getElementById('field-international');
+
+            if (val === "" || algeriaVariations.includes(val)) {
+                algeriaBox.style.display = 'block';
+                internationalBox.style.display = 'none';
+            } else {
+                algeriaBox.style.display = 'none';
+                internationalBox.style.display = 'block';
+            }
+        });
+
+        // Gestion des aperçus photo
+        const photoInput = document.getElementById('id_photos');
+        const previewContainer = document.createElement('div');
+        previewContainer.className = 'photo-preview-container';
+
+        if (photoInput) {
+            // Insérer le conteneur d'aperçu après le champ
+            photoInput.parentNode.insertBefore(previewContainer, photoInput.nextSibling);
+
+            // Fonction pour créer l'aperçu
+            function createPreview(file) {
+                const reader = new FileReader();
+
+                reader.onload = function (e) {
+                    const preview = document.createElement('div');
+                    preview.className = 'photo-preview';
+
+                    preview.innerHTML = `
+                <img src="${e.target.result}" alt="Aperçu">
+                <button type="button" class="remove-photo" title="Retirer cette photo">&times;</button>
+            `;
+
+                    // Bouton de suppression
+                    preview.querySelector('.remove-photo').addEventListener('click', function () {
+                        preview.remove();
+                        updateFileList();
+                    });
+
+                    previewContainer.appendChild(preview);
+                };
+
+                reader.readAsDataURL(file);
+            }
+
+            // Mettre à jour la liste des fichiers
+            function updateFileList() {
+                const dataTransfer = new DataTransfer();
+
+                // Référence aux aperçus existants
+                document.querySelectorAll('.photo-preview').forEach(preview => {
+                    // Stocker la référence au fichier dans dataset
+                    if (preview.dataset.fileName) {
+                        // Pour le moment, on garde l'approche simple
+                        // Une solution plus avancée nécessiterait de stocker les objets File
+                    }
+                });
+            }
+
+            // Écouter les changements
+            photoInput.addEventListener('change', function () {
+                // Vider les aperçus existants
+                previewContainer.innerHTML = '';
+
+                // Créer des aperçus pour chaque fichier
+                for (const file of this.files) {
+                    if (file.type.startsWith('image/')) {
+                        createPreview(file);
+                    }
+                }
+            });
+
+            // Message si pas de photos
+            if (!photoInput.files.length) {
+                previewContainer.innerHTML = `
+            <div style="color: #6c757d; font-style: italic; width: 100%; text-align: center; padding: 20px;">
+                <i class="bi bi-images"></i> Aucune photo sélectionnée. Les aperçus apparaîtront ici.
+            </div>
+        `;
+            }
+        }
+
+        updateNavDates();
+    </script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const photoInput = document.getElementById('images_mosquee');
+            if (!photoInput) return;
+
+            const maxPhotos = 5;
+
+            // 1. Créer le container pour les miniatures
+            const container = document.createElement('div');
+            container.id = 'photo-preview-container';
+            container.style.display = 'flex';
+            container.style.flexWrap = 'wrap';
+            container.style.gap = '10px';
+            container.style.marginTop = '15px';
+            container.style.padding = '10px';
+            container.style.border = '2px dashed #ccc';
+            container.style.borderRadius = '8px';
+            photoInput.parentNode.insertBefore(container, photoInput.nextSibling);
+
+            // 2. Alerte de limite
+            const alertDiv = document.createElement('div');
+            alertDiv.className = 'alert alert-warning mt-3';
+            alertDiv.style.display = 'none';
+            alertDiv.innerHTML = `
+        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+        <strong>{% trans "Trop de photos !" %}</strong>
+        {% trans "Maximum 5 photos autorisées. Veuillez re-sélectionner." %}
+    `;
+            photoInput.parentNode.insertBefore(alertDiv, photoInput.nextSibling);
+
+            // 3. Fonction pour afficher les miniatures
+            function showPreviews(files) {
+                container.innerHTML = '';
+
+                if (files.length === 0) {
+                    container.innerHTML = '<div style="color:#666; font-style:italic;">{% trans "Aucune photo sélectionnée" %}</div>';
+                    return;
+                }
+
+                // Limiter à 5 pour l'affichage
+                const limitedFiles = Array.from(files).slice(0, maxPhotos);
+
+                limitedFiles.forEach(file => {
+                    if (!file.type.startsWith('image/')) return;
+
+                    const reader = new FileReader();
+                    reader.onload = function (e) {
+                        const div = document.createElement('div');
+                        div.style.width = '100px';
+                        div.style.textAlign = 'center';
+
+                        div.innerHTML = `
+                    <img src="${e.target.result}"
+                         style="width:80px; height:80px; object-fit:cover; border-radius:5px; border:2px solid #ddd;">
+                    <div style="font-size:10px; margin-top:5px; color:#666; word-break:break-all;">
+                        ${file.name.length > 15 ? file.name.substring(0, 12) + '...' : file.name}
+                    </div>
+                `;
+                        container.appendChild(div);
+                    };
+                    reader.readAsDataURL(file);
+                });
+            }
+
+            // 4. Gestion du changement
+            photoInput.addEventListener('change', function () {
+                const files = this.files;
+
+                if (files.length > maxPhotos) {
+                    // TROP DE PHOTOS
+                    alertDiv.style.display = 'block';
+
+                    // Afficher modal
+                    const modal = new bootstrap.Modal(document.getElementById('photoLimitModal'));
+                    modal.show();
+
+                    // VIDER le champ
+                    this.value = '';
+
+                    // VIDER les miniatures + message
+                    container.innerHTML = '<div style="color:red; font-weight:bold; padding:20px; text-align:center;">⚠️ {% trans "Trop de photos ! Veuillez re-sélectionner (5 maximum)." %}</div>';
+
+                    // Quand modal fermé
+                    document.getElementById('photoLimitModal').addEventListener('hidden.bs.modal', function () {
+                        alertDiv.style.display = 'none';
+                    });
+                } else {
+                    // NOMBRE CORRECT
+                    alertDiv.style.display = 'none';
+                    showPreviews(files);
+                }
+            });
+
+            // 5. Initialiser
+            if (photoInput.files.length > 0) {
+                photoInput.dispatchEvent(new Event('change'));
+            } else {
+                container.innerHTML = '<div style="color:#666; font-style:italic;">{% trans "Aucune photo sélectionnée" %}</div>';
+            }
+        });
+    </script>
+
+    <script>
+        // Capitalisation du pays au moment de la saisie
+        document.getElementById('id_country').addEventListener('input', function () {
+            if (this.value.length === 1) {
+                // Dès la première lettre, la mettre en majuscule
+                this.value = this.value.toUpperCase();
+            }
+        });
+    </script>
+
+    <script>
+        // Capitalisation automatique pour les noms de lieux
+        document.addEventListener('DOMContentLoaded', function () {
+            // 1. Champ "Commune / Ville"
+            const cityField = document.getElementById('id_city');
+            if (cityField) {
+                cityField.addEventListener('blur', function () {
+                    if (this.value.trim()) {
+                        this.value = this.value.trim()
+                            .split(' ')
+                            .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+                            .join(' ');
+                    }
+                });
+            }
+
+            // 2. Champ "Province / Région / État"
+            const regionField = document.getElementById('id_international_region');
+            if (regionField) {
+                regionField.addEventListener('blur', function () {
+                    if (this.value.trim()) {
+                        this.value = this.value.trim()
+                            .split(' ')
+                            .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+                            .join(' ');
+                    }
+                });
+            }
+        });
+    </script>
+
+
+</body>
+</html>

@@ -1,0 +1,278 @@
+{% load i18n %}
+{% load humanize %}
+
+<!DOCTYPE html>
+<html lang="{{ LANGUAGE_CODE }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ country.name_fr }} - DJAMAA.DZ</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <style>
+        body { background-color: #f8faf9; font-family: 'Inter', sans-serif; padding-top: 80px; }
+        .card { border-radius: 15px; border: none; }
+    </style>
+</head>
+<body>
+
+    <div class="container py-5">
+
+        <!-- En-tête -->
+        <div class="row mb-5">
+            <div class="col-12 text-center">
+
+                <h1 class="fw-bold d-flex align-items-center justify-content-center">
+                    <div class="flag-wrapper me-3">
+                        {% if country.code %}
+                            <img src="https://flagcdn.com/w160/{{ country.code|lower }}.png"
+                                 alt="Drapeau"
+                                 style="width: 80px; height: auto; border: 1px solid #dee2e6; border-radius: 4px; box-shadow: 2px 2px 5px rgba(0,0,0,0.1);">
+                        {% elif country.flag_url %}
+                            <img src="{{ country.flag_url }}"
+                                 alt="Drapeau"
+                                 style="width: 80px; height: auto; border: 1px solid #dee2e6; border-radius: 4px;">
+                        {% endif %}
+                    </div>
+
+                    <span class="ms-3">
+                        {% if LANGUAGE_CODE == 'ar' and country.name_ar %}{{ country.name_ar }}
+                        {% elif LANGUAGE_CODE == 'en' and country.name_en %}{{ country.name_en }}
+                        {% else %}{{ country.name_fr }}{% endif %}
+                    </span>
+                </h1>
+
+                <div class="mt-4">
+            <span class="badge bg-success p-3 fs-5">
+                {{ mosques_count }}
+                <span style="font-size: 1.2em;" class="ms-2">🕌</span>
+                {% trans "Mosquées vérifiées" %}
+            </span>
+
+                    <span class="badge bg-info p-3 fs-5 ms-3">
+                <i class="bi bi-buildings"></i>
+                {{ total_villes }} {% trans "Villes" %}
+            </span>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- DONNÉES DU PAYS -->
+        <!-- LIGNE 1 - CENTRÉE -->
+        <div class="row mb-4 justify-content-center">
+            <!-- 1. Capitale -->
+            <div class="col-md-3 col-6">
+                <div class="card shadow-sm h-100 border-top border-primary border-3">
+                    <div class="card-body text-center">
+                        <h5 class="card-title text-muted"><i
+                                class="bi bi-building text-primary"></i> {% trans "Capitale" %}</h5>
+                        <p class="h4">
+                            {% if LANGUAGE_CODE == 'ar' and country.capital_ar %}
+                                {{ country.capital_ar }}
+                            {% elif LANGUAGE_CODE == 'en' and country.capital_en %}
+                                {{ country.capital_en }}
+                            {% else %}
+                                {{ country.capital_fr|default:"-" }}
+                            {% endif %}
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. Devise -->
+            <div class="col-md-3 col-6">
+                <div class="card shadow-sm h-100 border-top border-success border-3">
+                    <div class="card-body text-center">
+                        <h5 class="card-title text-muted"><i
+                                class="bi bi-cash-coin text-success"></i> {% trans "Devise" %}</h5>
+                        <p class="h4">
+                            {% if LANGUAGE_CODE == 'ar' and country.currency_ar %}
+                                {{ country.currency_ar }}
+                            {% elif LANGUAGE_CODE == 'en' and country.currency_en %}
+                                {{ country.currency_en }}
+                            {% else %}
+                                {{ country.currency_fr|default:"-" }}
+                            {% endif %}
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3. PIB -->
+            <div class="col-md-3 col-6">
+                <div class="card shadow-sm h-100 border-top border-warning border-3">
+                    <div class="card-body text-center">
+                        <h5 class="card-title text-muted"><i class="bi bi-graph-up text-warning"></i> {% trans "PIB" %}
+                        </h5>
+                        <p class="h4">{{ country.gdp|default:0|floatformat:1 }} Md$</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- LIGNE 2 - CENTRÉE -->
+        <div class="row mb-5 justify-content-center">
+
+            <!-- 4. Population -->
+            <div class="col-md-3 col-6">
+                <div class="card shadow-sm h-100 border-top border-info border-3">
+                    <div class="card-body text-center">
+                        <h5 class="card-title text-muted"><i
+                                class="bi bi-people-fill text-info"></i> {% trans "Population" %}</h5>
+                        <p class="h4">{{ country.population|default:0|intcomma }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 5. Langue officielle -->
+            <div class="col-md-3 col-6">
+                <div class="card shadow-sm h-100 border-top border-danger border-3">
+                    <div class="card-body text-center">
+                        <h5 class="card-title text-muted"><i
+                                class="bi bi-translate text-danger"></i> {% trans "Langue officielle" %}</h5>
+                        <p class="h4">
+                            {% if LANGUAGE_CODE == 'ar' and country.language_ar %}
+                                {{ country.language_ar }}
+                            {% elif LANGUAGE_CODE == 'en' and country.language_en %}
+                                {{ country.language_en }}
+                            {% else %}
+                                {{ country.language_fr|default:"-" }}
+                            {% endif %}
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Villes - Version améliorée -->
+        {% if villes_stats %}
+            <div class="row">
+                <div class="col-md-8 mx-auto">
+                    <h3 class="mb-4"><i class="bi bi-bar-chart-fill text-primary"></i> {% trans "Répartition par ville" %}</h3>
+                    <div class="list-group">
+                        {% for ville in villes_stats %}
+                            <div class="list-group-item d-flex justify-content-between align-items-center hover-shadow">
+                                <div class="d-flex align-items-center">
+                                    <!-- Numéro avec couleur -->
+                                    <div class="me-3">
+                                        <span class="badge
+                                            {% if forloop.counter == 1 %}bg-warning text-dark
+                                            {% elif forloop.counter == 2 %}bg-secondary
+                                            {% elif forloop.counter == 3 %}bg-danger
+                                            {% else %}bg-light text-dark{% endif %}
+                                            rounded-circle p-2"
+                                            style="width: 40px; height: 40px; display: inline-flex; align-items: center; justify-content: center;">
+                                            {{ forloop.counter }}
+                                        </span>
+                                    </div>
+
+                                    <!-- Infos ville -->
+                                    <div>
+                                        <h5 class="mb-1 fw-bold">{{ ville.name }}</h5>
+                                        {% if ville.wilaya %}
+                                            <small class="text-muted">
+                                                <i class="bi bi-geo-alt"></i> {% trans "Wilaya" %}: {{ ville.wilaya }}
+                                            </small>
+                                        {% endif %}
+                                    </div>
+                                </div>
+
+                                <!-- Compteur avec icône -->
+                                <div class="text-end">
+                                    <span class="badge bg-success rounded-pill fs-6 p-2">
+                                        <i class="bi bi-mosque"></i> {{ ville.count }}
+                                    </span>
+                                    <div class="text-muted small mt-1">
+                                        {% trans "mosquées" %}
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+
+
+                <!-- Wilayas Algérie - Style cartes amélioré -->
+        {% if country.name_fr == "Algérie" and wilayas %}
+        <div class="row mt-5">
+            <div class="col-12">
+                <h3 class="mb-4"><i class="bi bi-map-fill text-success"></i> {% trans "Wilayas d'Algérie" %}</h3>
+                <div class="row g-3 justify-content-center">
+                    {% for wilaya in wilayas %}
+                    <div class="col-md-3 col-sm-4 col-6">
+                        <div class="card shadow-sm h-100 border-top
+                            {% cycle 'border-primary' 'border-success' 'border-warning' 'border-info' 'border-danger' %}
+                            border-3">
+                            <div class="card-body text-center">
+                                <!-- Numéro de wilaya -->
+                                <div class="mb-3">
+                                    <span class="badge
+                                        {% cycle 'bg-primary' 'bg-success' 'bg-warning' 'bg-info' 'bg-danger' %}
+                                        rounded-circle p-3"
+                                        style="width: 60px; height: 60px; display: inline-flex; align-items: center; justify-content: center; font-size: 1.5rem;">
+                                        {{ wilaya.code }}
+                                    </span>
+                                </div>
+
+                                <!-- Nom de la wilaya -->
+                                <h5 class="card-title fw-bold">
+                                    {% if LANGUAGE_CODE == 'ar' %}{{ wilaya.name_ar }}{% else %}{{ wilaya.name_fr }}{% endif %}
+                                </h5>
+                                <p class="text-muted small">{% trans "Wilaya" %}</p>
+
+                                <!-- Icône et compteur -->
+                                <div class="my-3">
+                                    <i class="bi
+                                        {% cycle 'bi-building' 'bi-building' 'bi-building-check' 'bi-building-fill' 'bi-buildings' %}
+                                        {% cycle 'text-primary' 'text-success' 'text-warning' 'text-info' 'text-danger' %}
+                                        fs-1">
+                                    </i>
+                                </div>
+
+                                <!-- Nombre de mosquées -->
+                                <span class="badge
+                                    {% if wilaya.mosque_count == 0 %}bg-light text-dark
+                                    {% elif wilaya.mosque_count < 5 %}bg-info
+                                    {% elif wilaya.mosque_count < 20 %}bg-primary
+                                    {% else %}bg-success{% endif %}
+                                    p-2 fs-5">
+                                    {{ wilaya.mosque_count }} <i class="bi bi-mosque"></i>
+                                </span>
+
+                                <!-- Bouton -->
+                                <a href="{% url 'carte' %}?wilaya={{ wilaya.code }}"
+                                   class="btn btn-outline-success btn-sm mt-3">
+                                    <i class="bi bi-eye-fill"></i> {% trans "Voir sur carte" %}
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+                <!-- Bouton retour amélioré -->
+        <div class="row mt-5">
+            <div class="col-12 text-center">
+                <a href="{% url 'panorama' %}"
+                   class="btn btn-success btn-lg px-5 py-3 rounded-pill shadow-sm hover-lift">
+                    <i class="bi bi-arrow-left-circle-fill me-2"></i>
+                    <span class="fw-bold">{% trans "Retour au panorama" %}</span>
+                    <i class="bi bi-globe-americas ms-2"></i>
+                </a>
+                <p class="text-muted mt-3">
+                    <i class="bi bi-info-circle"></i>
+                    {% trans "Retour à la vue globale de tous les pays" %}
+                </p>
+            </div>
+        </div>
+
+    </div>
+</body>
+</html>

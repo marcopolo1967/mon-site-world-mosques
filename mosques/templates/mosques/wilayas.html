@@ -1,0 +1,529 @@
+
+{% load i18n %}
+<!DOCTYPE html>
+<html lang="{{ LANGUAGE_CODE }}" dir="{% if LANGUAGE_BIDI %}rtl{% else %}ltr{% endif %}">
+<head>
+    <!-- TOUT EN HAUT : jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% trans "Panorama" %} - DJAMAA.DZ</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <!-- CSS Select2 -->
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet"/>
+    <!-- JS Select2 -->
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+    <style>
+
+        :root { --p-green: #2e7d32; --dark-green: #1b5e20; }
+        body { background-color: #f8faf9; font-family: 'Inter', sans-serif; }
+
+        /* --- NAVBAR HARMONISÉE --- */
+        .navbar {
+            background: rgba(255, 255, 255, 0.9) !important;
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 100px;
+            padding: 0.6rem 1.5rem !important;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+            max-width: 1150px;
+            margin: 0 auto;
+        }
+        .navbar-container { position: fixed; top: 20px; left: 0; right: 0; z-index: 1050; padding: 0 15px; }
+
+        .date-stack {
+            font-size: 0.75rem; line-height: 1.2; border-left: 2px solid #eee;
+            padding-left: 15px; margin-left: 15px; display: flex; flex-direction: column; justify-content: center;
+        }
+
+        .nav-link { font-weight: 600; color: #333 !important; border-radius: 50px; padding: 0.6rem 1rem !important; font-size: 0.9rem; }
+        .nav-link:hover { background: rgba(46, 125, 50, 0.1); color: var(--p-green) !important; }
+        .nav-link.active { color: var(--p-green) !important; background: rgba(46, 125, 50, 0.1); }
+         .nav-admin-btn {
+            background: #fff5f5;
+            color: #e03131 !important;
+            border: 1px solid #ffc9c9;
+            margin-left: 10px;
+        }
+        .nav-admin-btn:hover { background: #e03131 !important; color: white !important; }
+
+        /* --- STYLE SPÉCIFIQUE PANORAMA --- */
+        .page-header { margin-top: 130px; }
+        .continent-nav { background: white; padding: 10px; border-radius: 50px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); display: inline-flex; }
+        .nav-pills .nav-link { color: #555 !important; border-radius: 30px; margin: 0; }
+        .nav-pills .nav-link.active { background-color: var(--p-green) !important; color: white !important; }
+
+        .country-card {
+            border-radius: 20px;
+            border: none;
+            transition: 0.3s;
+            cursor: pointer;
+            background: white;
+        }
+
+        .country-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .flag-box {
+            height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            background: #f1f3f1;
+            border-radius: 20px 20px 0 0;
+        }
+
+        /* --- STYLES AUTOCOMPLETE --- */
+        .autocomplete-item {
+            padding: 12px 20px;
+            cursor: pointer;
+            border-bottom: 1px solid #f5f5f5;
+            display: flex;
+            align-items: center;
+            transition: background 0.2s;
+        }
+
+        .autocomplete-item:hover {
+            background-color: rgba(46, 125, 50, 0.08);
+        }
+
+        .autocomplete-item.active {
+            background-color: rgba(46, 125, 50, 0.15);
+        }
+
+        .autocomplete-flag {
+            font-size: 1.5rem;
+            margin-right: 12px;
+            width: 30px;
+            text-align: center;
+        }
+
+        .autocomplete-name {
+            font-weight: 500;
+            color: #333;
+        }
+
+        .autocomplete-count {
+            margin-left: auto;
+            background: var(--p-green);
+            color: white;
+            padding: 2px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="navbar-container">
+        <nav class="navbar navbar-expand-lg">
+            <div class="container-fluid">
+                <a class="navbar-brand fw-bold d-flex align-items-center" href="/" style="color: var(--p-green); font-size: 1.5rem;">
+                    <i class="bi bi-mosque-fill me-2"></i>
+                    <span>DJAMAA<span class="text-dark">.DZ</span></span>
+                </a>
+
+                <div class="date-stack d-none d-lg-flex">
+                    <div class="text-muted small">
+                        <i class="bi bi-calendar3 me-1"></i> <span id="nav-date-gregorian"></span>
+                    </div>
+                    <div class="text-success fw-bold small">
+                        <i class="bi bi-moon-stars-fill me-1"></i> <span id="nav-date-hijri"></span>
+                    </div>
+                </div>
+
+                <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav ms-auto align-items-center">
+                        <li class="nav-item"><a class="nav-link" href="{% url 'home' %}"><i class="bi bi-house-door me-1"></i> {% trans "Accueil" %}</a></li>
+                        <li class="nav-item"><a class="nav-link" href="{% url 'carte' %}"><i class="bi bi-map me-1"></i> {% trans "Carte" %}</a></li>
+                        <li class="nav-item"><a class="nav-link" href="{% url 'proposer' %}"><i class="bi bi-plus-circle me-1"></i> {% trans "Proposition" %}</a></li>
+
+
+                        {% if user.is_staff %}
+                            <li class="nav-item">
+                                <a class="nav-link nav-admin-btn" href="{% url 'admin:index' %}">
+                                    <i class="bi bi-shield-lock me-1"></i> {% trans "Administrateur" %}
+                                </a>
+                            </li>
+                        {% endif %}
+
+                        {% get_current_language as CURRENT_LANG %}
+
+                        <li class="nav-item dropdown ms-lg-2">
+                            <a class="nav-link dropdown-toggle shadow-sm" href="#" id="langDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false"
+                               style="background: #2e7d32; color: white !important; border-radius: 50px; padding: 5px 12px !important; font-size: 0.85rem; font-weight: bold; display: inline-flex; align-items: center; border: none;">
+
+                                <i class="bi bi-translate me-2"></i>
+
+                                <span>
+                                     {% if CURRENT_LANG == 'ar' %}
+                                        AR 🇩🇿
+                                    {% elif CURRENT_LANG == 'en' %}
+                                         EN 🇬🇧
+                                    {% else %}
+                                         FR 🇫🇷
+                                    {% endif %}
+                                </span>
+                            </a>
+
+                            <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0 mt-2" aria-labelledby="langDropdown" style="border-radius: 12px; min-width: 150px;">
+                                <li>
+                                    <form action="{% url 'set_language' %}" method="post" class="m-0">
+                                        {% csrf_token %}
+                                        <input name="next" type="hidden" value="{{ request.get_full_path }}">
+                                        <button type="submit" name="language" value="fr" class="dropdown-item d-flex justify-content-between {% if CURRENT_LANG == 'fr' %}fw-bold text-success{% endif %}">
+                                            <span>Français</span> {% if CURRENT_LANG == 'fr' %}✓{% endif %}
+                                        </button>
+                                    </form>
+                                </li>
+                                <li>
+                                    <form action="{% url 'set_language' %}" method="post" class="m-0">
+                                        {% csrf_token %}
+                                        <input name="next" type="hidden" value="{{ request.get_full_path }}">
+                                        <button type="submit" name="language" value="ar" class="dropdown-item d-flex justify-content-between text-end {% if CURRENT_LANG == 'ar' %}fw-bold text-success{% endif %}">
+                                            {% if CURRENT_LANG == 'ar' %}✓{% endif %} <span>العربية</span>
+                                        </button>
+                                    </form>
+                                </li>
+                                <li>
+                                    <form action="{% url 'set_language' %}" method="post" class="m-0">
+                                        {% csrf_token %}
+                                        <input name="next" type="hidden" value="{{ request.get_full_path }}">
+                                        <button type="submit" name="language" value="en" class="dropdown-item d-flex justify-content-between {% if CURRENT_LANG == 'en' %}fw-bold text-success{% endif %}">
+                                            <span>English</span> {% if CURRENT_LANG == 'en' %}✓{% endif %}
+                                        </button>
+                                    </form>
+                                </li>
+                            </ul>
+                        </li>
+
+
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </div>
+
+    <div class="container page-header py-5">
+        <div class="text-center mb-5">
+            <h1 class="fw-bold text-dark">{% trans "Panorama" %} <span style="color: var(--p-green);">{% trans "Mondial" %}</span></h1>
+            <p class="text-muted">{% trans "Explorez les statistiques par continent et par pays" %}</p>
+
+            <div class="continent-nav mt-3">
+                <ul class="nav nav-pills">
+                    <li class="nav-item">
+                        <button class="nav-link" data-continent="na">{% trans "Amérique du Nord" %}</button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link" data-continent="eu">{% trans "Europe" %}</button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link active" data-continent="af">{% trans "Afrique" %}</button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link" data-continent="as">{% trans "Asie" %}</button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link" data-continent="oc">{% trans "Océanie" %}</button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link" data-continent="sa">{% trans "Amérique du Sud" %}</button>
+                    </li>
+                </ul>
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="row justify-content-center mb-5">
+        <div class="col-md-8 col-lg-6">
+            <div class="position-relative">
+                <i class="bi bi-search position-absolute"
+                   style="top: 50%; left: 20px; transform: translateY(-50%); color: #999;"></i>
+                <input type="text"
+                       id="search-country-autocomplete"
+                       class="form-control form-control-lg ps-5 border-2"
+                       style="border-radius: 50px; padding-left: 50px;"
+                       placeholder="{% trans 'Tapez le nom de votre pays...' %}"
+                       autocomplete="off">
+                <div id="autocomplete-results"
+                     class="position-absolute w-100 bg-white shadow-lg rounded-3 mt-1 d-none"
+                     style="z-index: 1000; max-height: 300px; overflow-y: auto; border: 1px solid #e0e0e0;"></div>
+            </div>
+            <p class="text-muted small text-center mt-2">
+                {% trans "Commencez à taper les 2 premières lettres pour voir les suggestions" %}
+            </p>
+        </div>
+    </div>
+
+    <div class="container mb-5">
+        <div class="row" id="countries-grid">
+            </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        function updateNavDates() {
+            const today = new Date();
+            const lang = "{{ LANGUAGE_CODE }}" || "fr";
+
+            // 1. DATE GRÉGORIENNE
+            const gregOptions = {weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'};
+            const gregElem = document.getElementById('nav-date-gregorian');
+            if (gregElem) gregElem.innerHTML = today.toLocaleDateString(lang, gregOptions);
+
+            // 2. DATE HIJRI (API précise)
+            const hijriElem = document.getElementById('nav-date-hijri');
+            if (!hijriElem) return;
+
+            const yyyy = today.getFullYear();
+            const mm = String(today.getMonth() + 1).padStart(2, '0');
+            const dd = String(today.getDate()).padStart(2, '0');
+
+            // Fonction asynchrone pour l'API
+            async function fetchHijriDate() {
+                try {
+                    const response = await fetch(`https://api.aladhan.com/v1/gToH?date=${dd}-${mm}-${yyyy}`);
+                    const data = await response.json();
+                    if (data.code === 200) {
+                        const hijri = data.data.hijri;
+                        hijriElem.innerHTML = `${hijri.day} ${hijri.month.ar} ${hijri.year} هـ`;
+                        hijriElem.dir = "rtl";
+                        hijriElem.style.fontFamily = "'Segoe UI', Arial, sans-serif";
+                        return;
+                    }
+                } catch (error) {
+                    console.log("API hijri échouée, utilisant fallback");
+                }
+
+                // FALLBACK si API échoue
+                const hijriMonthsAr = ["محرم", "صفر", "ربيع الأول", "ربيع الثاني", "جمادى الأولى", "جمادى الآخرة", "رجب", "شعبان", "رمضان", "شوال", "ذو القعدة", "ذو الحجة"];
+                const approximateHijriYear = 1446; // 2025 approximatif
+                const approximateHijriMonth = 6; // Mois approximatif
+                hijriElem.innerHTML = `1 ${hijriMonthsAr[approximateHijriMonth]} ${approximateHijriYear} هـ`;
+                hijriElem.dir = "rtl";
+            }
+
+            fetchHijriDate();
+        }
+
+        // Exécuter au chargement
+        updateNavDates();
+    </script>
+
+    <script>
+        const lang = "{{ request.LANGUAGE_CODE|default:'fr' }}";
+        const rawData = {{ countries_json|safe }};
+        let currentContinent = 'af';
+        let currentFocus = -1;
+
+        // Fonction pour obtenir le nom dans la langue active
+        function getCountryName(country) {
+            if (lang === 'ar' && country.name_ar) return country.name_ar;
+            if (lang === 'en' && country.name_en) return country.name_en;
+            return country.name_fr || country.name || '';
+        }
+
+        // Fonction de recherche avec regex (comme le premier script)
+        function findMatches(wordToMatch, data) {
+            if (!wordToMatch || wordToMatch.length < 2) return [];
+
+            const regex = new RegExp(wordToMatch, 'gi');
+            return data.filter(country => {
+                // Recherche dans toutes les langues
+                return (
+                    (country.name_fr && country.name_fr.match(regex)) ||
+                    (country.name_ar && country.name_ar.match(regex)) ||
+                    (country.name_en && country.name_en.match(regex)) ||
+                    (country.name && country.name.match(regex))
+                );
+            });
+        }
+
+        // Fonction d'affichage des résultats
+        function displayMatches(inputValue) {
+            const resultsDiv = document.getElementById('autocomplete-results');
+            if (!inputValue || inputValue.length < 2) {
+                resultsDiv.classList.add('d-none');
+                return;
+            }
+
+            // Filtrer par continent actuel
+            const continentData = rawData.filter(p => p.continent === currentContinent);
+
+            // Trouver les correspondances avec recherche regex
+            const matchArray = findMatches(inputValue, continentData);
+
+            if (matchArray.length === 0) {
+                resultsDiv.innerHTML = `
+                <div class="autocomplete-item">
+                    <div class="text-muted p-3 text-center">{% trans "Aucun pays trouvé" %}</div>
+                </div>`;
+                resultsDiv.classList.remove('d-none');
+                return;
+            }
+
+            // Limiter à 8 suggestions
+            const suggestions = matchArray.slice(0, 8);
+
+            let html = '';
+            suggestions.forEach((country, index) => {
+                const countryName = getCountryName(country);
+                const flag = country.flag || '🏳️';
+                const mosqueCount = country.mosque_count || 0;
+                const code = country.code || '';
+
+                html += `
+                    <div class="autocomplete-item ${index === 0 ? 'active' : ''}"
+                        data-index="${index}"
+                        data-country-code="${code}"
+                        data-country-name="${countryName.replace(/"/g, '&quot;')}"
+                        onmouseenter="setActiveSuggestion(${index})"
+                        onclick="selectSuggestion(this)">
+                        <div class="autocomplete-flag">${flag}</div>
+                        <div class="autocomplete-name">${countryName}</div>
+                        <div class="autocomplete-count">${country.mosque_count}</div>  <!-- CORRIGÉ -->
+                    </div>`;
+
+            });
+
+            resultsDiv.innerHTML = html;
+            resultsDiv.classList.remove('d-none');
+            currentFocus = 0;
+        }
+
+        // Fonctions auxiliaires
+        function setActiveSuggestion(index) {
+            document.querySelectorAll('.autocomplete-item').forEach((item, i) => {
+                item.classList.toggle('active', i === index);
+            });
+            currentFocus = index;
+        }
+
+        function selectSuggestion(item) {
+            const code = item.getAttribute('data-country-code');
+            const name = item.getAttribute('data-country-name');
+            const input = document.getElementById('search-country-autocomplete');
+
+            if (input && name) {
+                input.value = name;
+            }
+
+            document.getElementById('autocomplete-results').classList.add('d-none');
+
+            if (code) {
+                window.location.href = `/panorama/pays/${code}/`;
+            }
+        }
+
+        function closeAutocomplete() {
+            document.getElementById('autocomplete-results').classList.add('d-none');
+            currentFocus = -1;
+        }
+
+        // Gestion des événements clavier
+        function handleKeyNavigation(e) {
+            const resultsDiv = document.getElementById('autocomplete-results');
+            const items = resultsDiv.querySelectorAll('.autocomplete-item');
+
+            if (resultsDiv.classList.contains('d-none') || items.length === 0) return;
+
+            switch (e.key) {
+                case 'ArrowDown':
+                    e.preventDefault();
+                    currentFocus = (currentFocus + 1) % items.length;
+                    setActiveSuggestion(currentFocus);
+                    break;
+
+                case 'ArrowUp':
+                    e.preventDefault();
+                    currentFocus = (currentFocus - 1 + items.length) % items.length;
+                    setActiveSuggestion(currentFocus);
+                    break;
+
+                case 'Enter':
+                    e.preventDefault();
+                    if (currentFocus >= 0 && currentFocus < items.length) {
+                        selectSuggestion(items[currentFocus]);
+                    }
+                    break;
+
+                case 'Escape':
+                    closeAutocomplete();
+                    break;
+            }
+        }
+
+        // Initialisation
+        document.addEventListener('DOMContentLoaded', () => {
+            // Gestion des continents
+            document.querySelectorAll('.continent-nav .nav-link').forEach(btn => {
+                btn.addEventListener('click', function () {
+                    document.querySelectorAll('.continent-nav .nav-link').forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    currentContinent = this.getAttribute('data-continent') || 'af';
+                    closeAutocomplete();
+                });
+            });
+
+            // Gestion de la recherche
+            const input = document.getElementById('search-country-autocomplete');
+            const resultsDiv = document.getElementById('autocomplete-results');
+
+            if (input) {
+                // Recherche en temps réel avec debounce
+                let timeout;
+                input.addEventListener('input', function () {
+                    clearTimeout(timeout);
+                    timeout = setTimeout(() => {
+                        displayMatches(this.value);
+                    }, 150); // Délai de 150ms
+                });
+
+                // Navigation clavier
+                input.addEventListener('keydown', handleKeyNavigation);
+
+                // Focus/blur
+                input.addEventListener('focus', function () {
+                    if (this.value.length >= 2) {
+                        displayMatches(this.value);
+                    }
+                });
+            }
+
+            // Fermer l'autocomplete en cliquant ailleurs
+            document.addEventListener('click', function (e) {
+                if (!e.target.closest('.position-relative')) {
+                    closeAutocomplete();
+                }
+            });
+        });
+    </script>
+
+    <script>
+        const firstCountry = rawData[0];
+        const debugElem = document.getElementById('debug-first-country');
+        // On vérifie que l'élément existe bien dans le HTML avant d'agir
+        if (firstCountry && debugElem) {
+            debugElem.innerHTML =
+                `FR: ${firstCountry.name_fr || '?'}<br>
+             AR: ${firstCountry.name_ar || 'VIDE'}<br>
+             EN: ${firstCountry.name_en || 'VIDE'}`;
+        }
+    </script>
+
+    
+</body>
+</html>

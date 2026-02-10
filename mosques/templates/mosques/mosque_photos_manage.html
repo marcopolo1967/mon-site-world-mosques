@@ -1,0 +1,484 @@
+{% extends "admin/base_site.html" %}
+{% load i18n admin_urls static %}
+
+{% block extrastyle %}
+{{ block.super }}
+<style>
+    /* ICI ON CACHE LE MESSAGE QUI VIENT DU PARENT (base_site.html) */
+    .messagelist {
+        display: none !important;
+    }
+
+    /* HEADER */
+    .page-header {
+        background: #417690;
+        color: white;
+        padding: 20px;
+        margin: -20px -20px 20px -20px;
+        border-bottom: 4px solid #366477;
+    }
+    .page-header h1 {
+        margin: 0 0 10px 0;
+        font-size: 24px;
+    }
+    .page-header .subtitle {
+        font-size: 14px;
+        opacity: 0.9;
+    }
+
+    /* BOUTONS */
+    .action-buttons {
+        margin: 20px 0;
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+    .btn {
+        display: inline-block;
+        padding: 10px 20px;
+        text-decoration: none;
+        border-radius: 4px;
+        font-weight: bold;
+        border: none;
+        cursor: pointer;
+        font-size: 14px;
+    }
+
+    .btn-primary {
+        background: #2E8B57; /* VERT ISLAMIQUE */
+        color: white;
+        border: 1px solid #1E6B47;
+    }
+
+    .btn-secondary {
+        background: #4682B4; /* BLEU CIEL */
+        color: white;
+        border: 1px solid #3572A4;
+    }
+
+    .btn-success {
+        background: #228B22; /* VERT FORÊT */
+        color: white;
+        border: 1px solid #1A7B1A;
+    }
+
+    .btn-warning {
+        background: #DAA520; /* OR DORÉ */
+        color: #212529;
+        border: 1px solid #C09520;
+    }
+
+    .btn-danger {
+        background: #8B0000; /* ROUGE FONCÉ */
+        color: white;
+        border: 1px solid #7B0000;
+    }
+
+
+    /* GRID DE PHOTOS */
+    .photo-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 20px;
+        margin: 30px 0;
+    }
+    .photo-card {
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        overflow: hidden;
+        background: white;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        transition: transform 0.2s;
+    }
+    .photo-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    }
+    .photo-image {
+        width: 100%;
+        height: 200px;
+        object-fit: cover;
+        display: block;
+    }
+    .photo-info {
+        padding: 15px;
+        border-top: 1px solid #eee;
+    }
+    .photo-actions {
+        display: flex;
+        gap: 5px;
+        margin-top: 10px;
+    }
+    .photo-actions form {
+        display: inline;
+    }
+    .photo-status {
+        display: inline-block;
+        padding: 3px 8px;
+        border-radius: 12px;
+        font-size: 12px;
+        font-weight: bold;
+        margin-bottom: 5px;
+    }
+    .status-approved {
+        background: #d4edda;
+        color: #155724;
+    }
+    .status-pending {
+        background: #fff3cd;
+        color: #856404;
+    }
+
+    /* UPLOAD FORM */
+    .upload-section {
+        background: #f8f9fa;
+        padding: 20px;
+        border-radius: 8px;
+        margin: 30px 0;
+        border: 2px dashed #dee2e6;
+    }
+    .upload-section:hover {
+        border-color: #417690;
+    }
+
+    /* STATS */
+    .stats-box {
+        background: #e9ecef;
+        padding: 15px;
+        border-radius: 8px;
+        margin: 20px 0;
+        display: flex;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 15px;
+    }
+    .stat-item {
+        text-align: center;
+    }
+    .stat-number {
+        font-size: 24px;
+        font-weight: bold;
+        color: #417690;
+    }
+    .stat-label {
+        font-size: 12px;
+        color: #6c757d;
+        text-transform: uppercase;
+    }
+
+    /* ============================================
+   FORCER LES COULEURS DU TEXTE DES BOUTONS
+   ============================================ */
+
+    /* 1. FORCER LE TEXTE BLANC SUR TOUS LES BOUTONS */
+    .action-buttons a.btn,
+    .action-buttons .btn-primary,
+    .action-buttons .btn-secondary {
+        color: #FFFFFF !important; /* BLANC PUR */
+        text-decoration: none !important;
+    }
+
+    /* 2. FORCER LE TEXTE SUR LE BOUTON ACTUALISER */
+    .action-buttons .btn-primary {
+        color: white !important;
+        font-weight: bold !important;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8) !important;
+    }
+
+    /* 3. FORCER LE TEXTE SUR LES BOUTONS SECONDAIRES */
+    .action-buttons .btn-secondary {
+        color: white !important;
+        font-weight: bold !important;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8) !important;
+    }
+
+    /* 4. OPTION : AJOUTER UN CONTRASTE SI LE BLANC NE MARCHE PAS */
+    .action-buttons a.btn {
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        text-rendering: optimizeLegibility;
+    }
+
+    /* 5. SI LE BLANC EST TROP CLAIR, ESSAYE NOIR */
+    /*
+    .action-buttons a.btn {
+        color: #000000 !important;
+        font-weight: 900 !important;
+    }
+    */
+</style>
+{% endblock %}
+
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+    <a href="{% url 'admin:index' %}">{% trans 'Home' %}</a>
+    &rsaquo; <a href="{% url 'admin:app_list' app_label='mosques' %}">Mosques</a>
+    &rsaquo; <a href="{% url 'admin:mosques_mosque_changelist' %}">Mosquées</a>
+    &rsaquo; <a href="{% url 'admin:mosques_mosque_change' mosque.id %}">{{ mosque.name|truncatechars:30 }}</a>
+    &rsaquo; Gestion des photos
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>📸 Gestion des photos</h1>
+    <div class="subtitle">
+        <strong>{{ mosque.name }}</strong> •
+        {{ mosque.city }}{% if mosque.wilaya %} - {{ mosque.wilaya.name_fr }}{% endif %}
+        {% if mosque.country and mosque.country != "Algérie" %} • {{ mosque.country }}{% endif %}
+    </div>
+</div>
+
+<div class="action-buttons">
+    <a href="{% url 'admin:mosques_mosque_change' mosque.id %}" class="btn btn-secondary">
+        ← Retour à la mosquée
+    </a>
+    <a href="{% url 'admin:mosques_mosque_changelist' %}" class="btn btn-secondary">
+        📋 Liste des mosquées
+    </a>
+    <a href="{% url 'admin:mosque_photos_detail' mosque.id %}" class="btn btn-primary">
+        🔄 Actualiser
+    </a>
+</div>
+
+<div class="stats-box">
+    <div class="stat-item">
+        <div class="stat-number">{{ photos.count }}</div>
+        <div class="stat-label">Photos totales</div>
+    </div>
+    <div class="stat-item">
+        <div class="stat-number">{{ photos|length }}</div>
+        <div class="stat-label">Affichées</div>
+    </div>
+    <div class="stat-item">
+        <div class="stat-number">{{ photos|length }}</div>
+        <div class="stat-label">Approuvées</div>
+    </div>
+    <div class="stat-item">
+        <div class="stat-number">0</div>
+        <div class="stat-label">En attente</div>
+    </div>
+    <div class="stat-item">
+        <div class="stat-number">{{ photos.last.created_at|date:"d/m/Y"|default:"-" }}</div>
+        <div class="stat-label">Première photo</div>
+    </div>
+    <div class="stat-item">
+        <div class="stat-number">{{ photos.first.created_at|date:"d/m/Y"|default:"-" }}</div>
+        <div class="stat-label">Dernière photo</div>
+    </div>
+</div>
+
+<!-- FORMULAIRE D'AJOUT DE PHOTOS -->
+<div class="upload-section">
+    <h3 style="margin-top: 0;">➕ Ajouter de nouvelles photos</h3>
+    <form method="post" enctype="multipart/form-data" id="upload-form">
+        {% csrf_token %}
+        <div style="margin: 15px 0;">
+            <input type="file" id="file-input" name="new_photos" multiple accept="image/*" style="display: none;">
+
+            <label for="file-input" class="btn btn-secondary"
+                   style="cursor: pointer; background: #0586f8; display: inline-block;">
+                📁 Choisir des photos sur mon ordinateur
+            </label>
+
+            <div id="file-list-names" style="margin-top: 10px; font-weight: bold; color: #417690;"></div>
+
+            <p style="font-size: 12px; color: #6c757d; margin-top: 5px;">
+                📌 Sélectionnez une ou plusieurs photos (Ctrl+clic ou Cmd+clic)
+            </p>
+        </div>
+
+        <button type="submit" id="submit-btn" class="btn btn-success"
+                style="display: none; animation: slideIn 0.3s ease-out; transition: all 0.3s;">
+            <span id="btn-text">📤 Télécharger les photos sélectionnées</span>
+            <span id="btn-loader" style="display: none;">⏳ Téléchargement en cours...</span>
+        </button>
+    </form>
+</div>
+
+
+<script>
+    const fileInput = document.getElementById('file-input');
+    const fileListNames = document.getElementById('file-list-names');
+    const submitBtn = document.getElementById('submit-btn');
+    const uploadForm = document.getElementById('upload-form');
+
+    fileInput.addEventListener('change', function () {
+        if (this.files && this.files.length > 0) {
+            submitBtn.style.display = 'inline-block';
+            let names = Array.from(this.files).map(f => f.name).join(', ');
+            fileListNames.textContent = "📂 Prêt à envoyer : " + (names.length > 50 ? this.files.length + " fichiers" : names);
+        } else {
+            submitBtn.style.display = 'none';
+            fileListNames.textContent = "";
+        }
+    });
+
+    uploadForm.addEventListener('submit', function() {
+        document.getElementById('btn-text').style.display = 'none';
+        document.getElementById('btn-loader').style.display = 'inline-block';
+        submitBtn.style.opacity = '0.7';
+        submitBtn.style.pointerEvents = 'none';
+    });
+</script>
+<style>
+    /* Petite animation d'apparition */
+    @keyframes slideIn {
+        from { opacity: 0; transform: translateY(-10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    /* Effet au survol */
+    .btn-success:hover {
+        filter: brightness(1.1);
+        transform: scale(1.02);
+    }
+</style>
+
+<script>
+    const fileInput = document.getElementById('file-input');
+    const submitBtn = document.getElementById('submit-btn');
+    const uploadForm = document.getElementById('upload-form');
+
+    // 1. Apparition du bouton
+    fileInput.addEventListener('change', function() {
+        if (this.files && this.files.length > 0) {
+            submitBtn.style.display = 'inline-block';
+        } else {
+            submitBtn.style.display = 'none';
+        }
+    });
+
+    // 2. Effet de chargement au clic
+    uploadForm.addEventListener('submit', function() {
+        document.getElementById('btn-text').style.display = 'none';
+        document.getElementById('btn-loader').style.display = 'inline-block';
+        submitBtn.style.opacity = '0.7';
+        submitBtn.style.pointerEvents = 'none'; // Évite les doubles clics
+    });
+</script>
+
+<!-- GRILLE DE PHOTOS -->
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+    <h3>📷 Photos existantes ({{ photos.count }})</h3>
+
+    {% if photos %}
+    <button type="submit" form="caption-form" class="btn btn-primary" style="background: #28a745; border: none; font-weight: bold;">
+        💾 Enregistrer toutes les légendes
+    </button>
+    {% endif %}
+</div>
+
+{% if photos %}
+<form method="post" id="caption-form">
+    {% csrf_token %}
+    <div class="photo-grid">
+        {% for photo in photos %}
+        <div class="photo-card">
+
+            <a href="{{ photo.image.url }}" target="_blank" title="Voir en plein écran">
+                <img src="{{ photo.image.url }}" alt="Photo {{ forloop.counter }}" class="photo-image" loading="lazy">
+            </a>
+
+            <div class="photo-info">
+                <div>
+                    <span class="photo-status status-{% if photo.is_approved %}approved{% else %}pending{% endif %}">
+                        {% if photo.is_approved %}✓ Approuvée{% else %}⏳ En attente{% endif %}
+                    </span>
+                </div>
+
+                <div style="font-size: 12px; color: #666; margin: 5px 0;">
+                    <div><strong>#{{ forloop.counter }}</strong></div>
+                    <div>📅 {{ photo.created_at|date:"d/m/Y H:i" }}</div>
+                    <div>👤 {{ photo.uploaded_by|default:"Admin" }}</div>
+
+                    <input type="text" name="caption_{{ photo.id }}"
+                           value="{{ photo.caption|default:'' }}"
+                           placeholder="📝 Ajouter ou modifier la légende"
+                           style="width:100%; margin-top:5px; padding:3px; font-size:12px; border: 1px solid #ccc; border-radius: 4px;">
+                </div>
+
+                <div class="photo-actions">
+                    <button type="submit" form="toggle-form-{{ photo.id }}" class="btn btn-{% if photo.is_approved %}warning{% else %}success{% endif %}" style="padding: 5px 10px; font-size: 12px;">
+                        {% if photo.is_approved %}✗ Désapprouver{% else %}✓ Approuver{% endif %}
+                    </button>
+
+                    <button type="submit" form="delete-form-{{ photo.id }}" class="btn btn-danger" style="padding: 5px 10px; font-size: 12px;">
+                        🗑️ Supprimer
+                    </button>
+
+                    <a href="{{ photo.image.url }}" target="_blank" class="btn btn-secondary" style="padding: 5px 10px; font-size: 12px;">
+                        👁️ Voir
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</form>
+{% for photo in photos %}
+    <form id="toggle-form-{{ photo.id }}" method="post" action="{% url 'admin:toggle_approve_mosque_photo' mosque.id photo.id %}">
+        {% csrf_token %}
+    </form>
+
+    <form id="delete-form-{{ photo.id }}" method="post" action="{% url 'admin:delete_mosque_photo' mosque.id photo.id %}" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette photo ?');">
+        {% csrf_token %}
+    </form>
+{% endfor %}
+
+{% if photos.count > 12 %}
+<div style="text-align: center; margin: 30px 0;">
+    <a href="#top" class="btn btn-secondary">↑ Retour en haut</a>
+</div>
+{% endif %}
+
+{% else %}
+<div style="text-align: center; padding: 50px; background: #f8f9fa; border-radius: 8px; margin: 30px 0;">
+    <div style="font-size: 48px; color: #dee2e6; margin-bottom: 20px;">📷</div>
+    <h3 style="color: #6c757d;">Aucune photo pour cette mosquée</h3>
+    <p style="color: #adb5bd;">Utilisez le formulaire ci-dessus pour ajouter des photos</p>
+</div>
+{% endif %}
+
+{% if messages %}
+<div id="django-messages-container" style="position: fixed; top: 20px; right: 20px; z-index: 9999; min-width: 300px;">
+    {% for message in messages %}
+    <div class="alert-box-item {{ message.tags }}"
+         style="padding: 15px 20px; margin-bottom: 10px; border-radius: 8px; color: white;
+                display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+                animation: slideInRight 0.4s ease-out;
+                {% if message.tags == 'success' %}background: #28a745;
+                {% elif message.tags == 'error' %}background: #dc3545;
+                {% else %}background: #ffc107; color: #333;{% endif %}">
+
+        <span>{{ message }}</span>
+
+        <button type="button" onclick="this.parentElement.remove();"
+                style="background: none; border: none; color: inherit; font-size: 24px; cursor: pointer; margin-left: 15px; font-weight: bold; line-height: 1;">
+            &times;
+        </button>
+    </div>
+    {% endfor %}
+</div>
+
+<style>
+    @keyframes slideInRight {
+        from { transform: translateX(100%); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+    }
+</style>
+{% endif %}
+
+<script>
+    // Fait disparaître les messages automatiquement après 5 secondes
+    setTimeout(function() {
+        const container = document.getElementById('django-messages-container');
+        if (container) {
+            container.style.transition = "opacity 0.5s ease";
+            container.style.opacity = "0";
+            setTimeout(() => container.remove(), 500); // Supprime après le fondu
+        }
+    }, 10000);
+</script>
+
+
+{% endblock %}

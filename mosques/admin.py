@@ -1,0 +1,735 @@
+from django.contrib import admin, messages
+from modeltranslation.admin import TranslationAdmin
+from .models import Wilaya, Mosque, MosquePhoto, Proposition, MosqueWithPhotos, Country, Proposition
+from .forms import MosqueAdminForm
+from django.utils import timezone
+from django import forms
+from datetime import timedelta
+from django.utils.html import format_html
+from django.urls import path, reverse
+from django.shortcuts import render, get_object_or_404, redirect
+from django.http import HttpResponseForbidden
+from django.utils.safestring import mark_safe
+from googletrans import Translator
+from django.forms.widgets import ClearableFileInput
+from django.forms import FileInput
+from mosques.utils.translation import translate_text_to_3_langs
+
+#from deep_translator import GoogleTranslator  # Ajout du traducteur
+#import time # Pour éviter de saturer l'API
+
+
+# ====================================================================
+# WIDGET UPLOAD MULTIPLE
+# ====================================================================
+
+class MultipleFileInput(forms.ClearableFileInput):
+    allow_multiple_selected = True
+
+    def __init__(self, attrs=None):
+        default_attrs = {'multiple': 'multiple'}
+        if attrs:
+            default_attrs.update(attrs)
+        super().__init__(default_attrs)
+
+
+# ====================================================================
+# FORMULAIRE MOSQUEE AVEC UPLOAD MULTIPLE
+# ====================================================================
+
+
+class MosqueAdminForm(forms.ModelForm):
+    bulk_photos = forms.FileField(
+        widget=MultipleFileInput(attrs={
+            'multiple': 'multiple',
+            'accept': 'image/*'
+        }),
+        required=False,
+        label="📸 Télécharger des photos"
+    )
+
+    class Meta:
+        model = Mosque
+        fields = "__all__"
+
+    def save(self, commit=True):
+        # 1️⃣ On sauvegarde d'abord la mosquée
+        instance = super().save(commit=False)
+
+        if commit:
+            instance.save()  # ⚠️ OBLIGATOIRE avant les photos
+
+        # 2️⃣ Gestion des photos (optionnelles)
+        files = self.files.getlist("bulk_photos")
+        for file in files:
+            MosquePhoto.objects.create(
+                mosque=instance,
+                image=file,
+                uploaded_by="Admin",
+                is_approved=True,
+            )
+
+        # 3️⃣ Traduction automatique
+        try:
+            translator = Translator()
+
+            # DESCRIPTION
+            if instance.description:
+                instance.description_fr = instance.description_fr or instance.description
+                instance.description_en = instance.description_en or translator.translate(
+                    instance.description, dest="en"
+                ).text
+                instance.description_ar = instance.description_ar or translator.translate(
+                    instance.description, dest="ar"
+                ).text
+
+            # HISTOIRE
+            if instance.history:
+                instance.history_fr = instance.history_fr or instance.history
+                instance.history_en = instance.history_en or translator.translate(
+                    instance.history, dest="en"
+                ).text
+                instance.history_ar = instance.history_ar or translator.translate(
+                    instance.history, dest="ar"
+                ).text
+
+        except Exception as e:
+            print("⚠️ Traduction échouée:", e)
+
+        if commit:
+            instance.save()
+
+        return instance
+
+
+# ====================================================================
+# ADMIN PRINCIPAL DES MOSQUÉES (SIMPLIFIÉ)
+# ====================================================================
+
+# ================================================
+# INLINE POUR LES PHOTOS : permet d'éditer caption
+# directement dans la page d'édition de la mosquée
+# ================================================
+class MosquePhotoInline(admin.TabularInline):
+    model = MosquePhoto  # Le modèle lié
+    extra = 1
+    fields = ('image', 'caption', 'is_approved', 'uploaded_by', 'created_at')
+    readonly_fields = ('uploaded_by', 'created_at')  # Admin ne peut pas changer qui a uploadé ni la date
+    show_change_link = True  # Permet de cliquer sur la ligne pour voir la photo en détail
+
+    def has_delete_permission(self, request, obj=None):
+        """Autorise toujours la suppression depuis l'inline"""
+        return True
+
+
+# ================================================
+# ADMIN PRINCIPAL DE LA MOSQUÉE
+# ================================================
+@admin.register(Mosque)
+class MosqueAdmin(admin.ModelAdmin):
+    form = MosqueAdminForm  # Formulaire personnalisé si besoin
+
+
+    list_display = ('name', 'country_link', 'display_wilaya', 'city', 'photo_count_display', 'view_photos_link')
+    list_filter = ('country_link', 'wilaya', 'is_verified')
+    search_fields = ('name', 'city', 'village', 'address')
+    list_per_page = 50
+    readonly_fields = ('photos', 'created_at', 'updated_at', 'current_photos_preview')
+
+    # ================================================
+    # MEDIA : scripts et CSS personnalisés
+    # ================================================
+    class Media:
+        js = (
+            'admin/js/toggle_wilaya.js',
+            'admin/js/photo_preview.js',
+            'admin/js/fix_form_enctype.js',
+            'modeltranslation/js/tabbed_translation_fields.js',
+        )
+        css = {
+            'all': (
+                'admin/css/photo_preview.css',
+                'modeltranslation/css/tabbed_translation_fields.css',
+            )
+        }
+
+    # ================================================
+    # MÉTHODES D'AFFICHAGE DANS LA LISTE
+    # ================================================
+    def display_country(self, obj):
+        return obj.country if obj.country else "—"
+    display_country.short_description = "Pays"
+    display_country.admin_order_field = 'country'
+
+    def display_wilaya(self, obj):
+        """Affiche la wilaya uniquement pour l'Algérie"""
+        if obj.country and obj.wilaya:
+            import unicodedata
+
+            def remove_accents(text):
+                text = unicodedata.normalize('NFD', text)
+                text = text.encode('ascii', 'ignore').decode('utf-8')
+                return text.lower()
+
+            normalized_country = remove_accents(str(obj.country).lower())
+            french_variations = ['algerie', 'algeria', 'dz']
+            arabic_variations = ['الجزائر', 'الـجزائر', 'جزائر']
+            if any(v in normalized_country for v in french_variations) or any(v in obj.country for v in arabic_variations):
+                return f"{obj.wilaya.code} - {obj.wilaya.name_fr}"
+        return "—"
+    display_wilaya.short_description = "Wilaya (Algérie)"
+    display_wilaya.admin_order_field = 'wilaya'
+
+    def photo_count_display(self, obj):
+        count = obj.photos.count()
+        if count == 0:
+            return format_html('<span style="color:gray;">📷 Aucune</span>')
+        return format_html('<span style="color:green; font-weight:bold;">📸 {} photo{}</span>', count, 's' if count > 1 else '')
+    photo_count_display.short_description = "Photos"
+
+    def view_photos_link(self, obj):
+        if obj.photos.count() == 0:
+            return "—"
+        url = reverse('admin:mosque_photos_detail', args=[obj.id])
+        return format_html(
+            '<a href="{}" class="button" style="padding: 5px 10px; background: #417690; color: white; text-decoration: none; border-radius: 3px; font-size: 12px;">👁️ Voir {} photo{}</a>',
+            url, obj.photos.count(), 's' if obj.photos.count() > 1 else ''
+        )
+    view_photos_link.short_description = "Voir photos"
+
+    # ================================================
+    # FIELDSETS POUR LA PAGE D'ÉDITION
+    # ================================================
+    fieldsets = (
+        ('Informations principales', {
+            'fields': ('name', 'country_link', 'country', 'wilaya', 'city', 'village', 'address')
+        }),
+        ('Coordonnées GPS', {
+            'fields': ('latitude', 'longitude'),
+            'classes': ('collapse',)
+        }),
+        ('Photos', {
+            'fields': ('bulk_photos', 'main_photo', 'current_photos_preview'),
+            'description': 'Utilisez le champ ci-dessus pour ajouter plusieurs photos à la fois'
+        }),
+        ('Description et Histoire', {
+            'fields': ('description', 'history'),
+        }),
+        ('Modération', {
+            'fields': ('is_verified',),
+            'classes': ('collapse',)
+        }),
+        ('Dates', {
+            'fields': ('created_at', 'updated_at'),
+            'classes': ('collapse',)
+        }),
+    )
+
+    # ================================================
+    # APERÇU DES PHOTOS EXISTANTES DANS LA PAGE D'EDIT
+    # ================================================
+    def current_photos_preview(self, obj):
+        if obj.id:
+            photos = obj.photos.all()[:6]
+            if photos.exists():
+                html = '<div style="margin: 20px 0; padding: 15px; background: #f8f8f8; border-radius: 8px;">'
+                html += '<h3 style="margin-top: 0;">📷 Photos existantes</h3>'
+                html += '<div style="display: flex; flex-wrap: wrap; gap: 10px; margin: 15px 0;">'
+
+                for photo in photos:
+                    html += f'''
+                    <div style="text-align: center; width: 100px;">
+                        <a href="{photo.image.url}" target="_blank" style="text-decoration: none;">
+                            <img src="{photo.image.url}" 
+                                 style="width: 80px; height: 80px; object-fit: cover; border-radius: 5px; border: 2px solid #ddd;">
+                        </a>
+                        <div style="font-size: 10px; margin-top: 5px; color: #666;">
+                            {photo.created_at.strftime('%d/%m/%y')}<br>
+                            📝 {photo.caption or "—"}
+                        </div>
+                    </div>
+                    '''
+
+                total_photos = obj.photos.count()
+                if total_photos > 6:
+                    html += f'<div style="align-self: center; color: #666; font-size: 12px;">+ {total_photos - 6} autres photos</div>'
+                detail_url = reverse('admin:mosque_photos_detail', args=[obj.id])
+                html += '</div>'
+                html += f'<a href="{detail_url}" style="display: inline-block; margin-top: 10px; padding: 8px 15px; background: #5a9bd5; color: white; text-decoration: none; border-radius: 4px;">📂 Gérer toutes les photos ({total_photos})</a>'
+                html += '</div>'
+                return format_html(html)
+        return format_html('<p style="color: #999; font-style: italic;">Aucune photo pour le moment</p>')
+    current_photos_preview.short_description = "Photos existantes"
+
+    # ================================================
+    # URLS PERSONNALISÉES POUR LA GESTION DES PHOTOS
+    # ================================================
+    def get_urls(self):
+        urls = super().get_urls()
+        custom_urls = [
+            path('<int:mosque_id>/photos/',
+                 self.admin_site.admin_view(self.mosque_photos_view),
+                 name='mosque_photos_detail'),
+            path('<int:mosque_id>/photos/<int:photo_id>/delete/',
+                 self.admin_site.admin_view(self.delete_photo_view),
+                 name='delete_mosque_photo'),
+            path('<int:mosque_id>/photos/<int:photo_id>/toggle-approve/',
+                 self.admin_site.admin_view(self.toggle_approve_photo_view),
+                 name='toggle_approve_mosque_photo'),
+        ]
+        return custom_urls + urls
+
+    # ================================================
+    # VUES PERSONNALISÉES
+    # ================================================
+    def mosque_photos_view(self, request, mosque_id):
+        mosque = get_object_or_404(Mosque, id=mosque_id)
+        photos = mosque.photos.all().order_by('-created_at')
+
+        if request.method == 'POST':
+            # 1️⃣ Mettre à jour les captions existantes
+            for key, value in request.POST.items():
+                if key.startswith('caption_'):
+                    try:
+                        photo_id = int(key.split('_')[1])
+                        photo = MosquePhoto.objects.get(id=photo_id, mosque=mosque)
+                        photo.caption = value.strip()
+                        photo.save()
+                    except (ValueError, MosquePhoto.DoesNotExist):
+                        pass  # Ignore les erreurs si id invalide ou photo inexistante
+
+            # 2️⃣ Ajouter de nouvelles photos
+            new_photos = request.FILES.getlist('new_photos')
+            if new_photos:
+                try:
+                    for photo_file in new_photos:
+                        MosquePhoto.objects.create(
+                            mosque=mosque,
+                            image=photo_file,
+                            uploaded_by=request.user.username,
+                            is_approved=True
+                        )
+                    messages.success(request, f"{len(new_photos)} photo(s) ajoutée(s) avec succès!")
+                except Exception as e:
+                    messages.error(request, f"❌ Erreur lors du téléchargement : {str(e)}")
+
+            return redirect('admin:mosque_photos_detail', mosque_id=mosque_id)
+
+        # --------------------------
+        # CONTEXT POUR LE TEMPLATE
+        # --------------------------
+        context = {
+            'mosque': mosque,
+            'photos': photos,
+            'title': f'Gestion des photos - {mosque.name}',
+            'opts': self.model._meta,
+            'app_label': self.model._meta.app_label,
+        }
+        return render(request, 'mosques/mosque_photos_manage.html', context)
+
+    def delete_photo_view(self, request, mosque_id, photo_id):
+        if request.method == 'POST':
+            photo = get_object_or_404(MosquePhoto, id=photo_id, mosque_id=mosque_id)
+            photo_name = str(photo.image)
+            photo.delete()
+            messages.success(request, f"Photo '{photo_name}' supprimée avec succès!")
+        return redirect('admin:mosque_photos_detail', mosque_id=mosque_id)
+
+    def toggle_approve_photo_view(self, request, mosque_id, photo_id):
+        if request.method == 'POST':
+            photo = get_object_or_404(MosquePhoto, id=photo_id, mosque_id=mosque_id)
+            photo.is_approved = not photo.is_approved
+            photo.save()
+            status = "approuvée" if photo.is_approved else "désapprouvée"
+            messages.success(request, f"Photo {status} avec succès!")
+        return redirect('admin:mosque_photos_detail', mosque_id=mosque_id)
+
+
+# ====================================================================
+# ADMIN SPÉCIAL POUR VOIR TOUTES LES MOSQUÉES AVEC PHOTOS
+# ====================================================================
+
+@admin.register(MosqueWithPhotos)
+class MosquePhotosViewAdmin(admin.ModelAdmin):
+    """
+    Vue spéciale : Liste TOUTES les mosquées avec photos
+    """
+
+    list_display = ('name', 'city', 'display_country', 'photo_count_display', 'view_photos_link')
+    list_filter = ('country', 'wilaya', 'is_verified')  # Inversion pays/wilaya dans le filtre
+    search_fields = ('name', 'city', 'village', 'address', 'country__name_fr', 'wilaya__name_fr')
+    list_per_page = 50
+
+    def display_country(self, obj):
+        """Affiche le pays (texte seulement)"""
+        return obj.country if obj.country else "—"
+
+    display_country.short_description = "Pays"
+    display_country.admin_order_field = 'country'
+
+    # Désactiver modification
+    def has_add_permission(self, request):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+    # Filtrer uniquement mosquées avec photos
+    def get_queryset(self, request):
+        return Mosque.objects.filter(photos__isnull=False).distinct()
+
+    def photo_count_display(self, obj):
+        count = obj.photos.count()
+
+        print(f"=== DEBUG MosqueAdmin ===")
+        print(f"Mosquée: {obj.name} (ID: {obj.id})")
+        print(f"obj.photos.count() = {count}")
+        print(f"Type de obj.photos: {type(obj.photos)}")
+        print(f"Relation existe? {hasattr(obj, 'photos')}")
+        return format_html('<span style="color:green; font-weight:bold;">📸 {}</span>', count)
+
+    photo_count_display.short_description = "Photos"
+
+    def view_photos_link(self, obj):
+        url = reverse('admin:mosque_photos_detail', args=[obj.id])
+        return format_html(
+            '<a href="{}" class="button" style="padding: 5px 10px; background: #417690; color: white; text-decoration: none; border-radius: 3px;">👁️ Voir photos</a>',
+            url
+        )
+
+    view_photos_link.short_description = "Action"
+
+
+# ====================================================================
+# ADMIN DES WILAYAS
+# ====================================================================
+
+@admin.register(Wilaya)
+class WilayaAdmin(admin.ModelAdmin):
+    list_display = ('code', 'name_fr', 'name_ar')
+    search_fields = ('name_fr', 'name_ar')
+
+
+
+
+class PropositionAdminForm(forms.ModelForm):
+    # Champ TEMPORAIRE pour upload
+    upload_photos = forms.FileField(
+        widget=MultipleFileInput(attrs={'accept': 'image/*'}),
+        required=False,
+        label="📸 Télécharger des photos",
+        help_text="Les URLs seront générées automatiquement"
+    )
+
+    class Meta:
+        model = Proposition
+        fields = '__all__'
+
+    def save(self, commit=True):
+        instance = super().save(commit=commit)
+
+        # 1. Gestion des photos (CORRECTION : enumerate donne (index, file))
+        files = self.files.getlist('bulk_photos') if 'bulk_photos' in self.files else []
+        if files:
+            for index, file in enumerate(files):  # CORRECTION ICI
+                MosquePhoto.objects.create(
+                    mosque=instance,
+                    image=file,  # file est l'objet fichier, pas le tuple
+                    uploaded_by="Admin",
+                    is_approved=True,
+                )
+
+        # 2. TRADUCTION AUTOMATIQUE (CORRECTION : utiliser description/history, pas *_fr)
+        try:
+            from googletrans import Translator
+            translator = Translator()
+
+            # CORRECTION : Utiliser les champs ORIGINAUX (français)
+            french_description = instance.description  # Champ original = français
+            french_history = instance.history  # Champ original = français
+
+            # Traduction Description
+            if french_description and (not instance.description_ar or not instance.description_en):
+                if not instance.description_ar:
+                    try:
+                        translated_ar = translator.translate(french_description, dest='ar')
+                        instance.description_ar = translated_ar.text
+                    except:
+                        instance.description_ar = french_description  # Fallback français
+
+                if not instance.description_en:
+                    try:
+                        translated_en = translator.translate(french_description, dest='en')
+                        instance.description_en = translated_en.text
+                    except:
+                        instance.description_en = french_description  # Fallback français
+
+            # Traduction Historique
+            if french_history and (not instance.history_ar or not instance.history_en):
+                if not instance.history_ar:
+                    try:
+                        translated_ar = translator.translate(french_history, dest='ar')
+                        instance.history_ar = translated_ar.text
+                    except:
+                        instance.history_ar = french_history  # Fallback français
+
+                if not instance.history_en:
+                    try:
+                        translated_en = translator.translate(french_history, dest='en')
+                        instance.history_en = translated_en.text
+                    except:
+                        instance.history_en = french_history  # Fallback français
+
+            if instance.description_ar or instance.description_en or instance.history_ar or instance.history_en:
+                instance.save()  # Sauvegarder seulement si changements
+
+        except Exception as e:
+            print(f"⚠️ Traduction échouée: {e}")
+            # Continuer sans traduction
+
+        return instance
+
+
+# ====================================================================
+# ADMIN DES PROPOSITIONS (GARDE TON CODE EXISTANT)
+# ====================================================================
+
+@admin.register(Proposition)
+class PropositionAdmin(admin.ModelAdmin):
+
+    form = PropositionAdminForm
+
+    # 1. Configuration de la liste
+    list_display = ('name', 'country', 'wilaya', 'city', 'created_at', 'status_colored', 'apercu_photo')
+    list_filter = ('wilaya', 'country', 'status')
+    search_fields = ('name', 'city', 'email', 'phone')
+    list_per_page = 50
+
+    def get_urls(self):
+        """Ajoute l'URL API pour le badge"""
+        urls = super().get_urls()
+        custom_urls = [
+            path('api/pending-count/',
+                 self.admin_site.admin_view(self.pending_count_api),
+                 name='pending_count_api'),
+        ]
+        return custom_urls + urls
+
+    def pending_count_api(self, request):
+        """API qui compte les propositions en attente"""
+        from django.http import JsonResponse
+        count = Proposition.objects.filter(status='pending').count()
+        return JsonResponse({'count': count})
+
+    def get_queryset(self, request):
+        """
+        N'affiche que les propositions EN ATTENTE ou REJETÉES
+        Les propositions approuvées sont masquées de la liste principale
+        """
+        # Appelle le queryset parent (toutes les propositions)
+        qs = super().get_queryset(request)
+        # Filtre pour exclure les propositions avec status='approved'
+        return qs.exclude(status='approved')
+
+    def status_colored(self, obj):
+        if obj.status == 'approved':
+            return format_html(
+                '<span style="color: green; font-weight: bold;">'
+                '✅ APPROUVÉE (créée en mosquée)'
+                '</span>'
+            )
+        elif obj.status == 'pending':
+            return format_html(
+                '<span style="color: orange; font-weight: bold;">'
+                '⏳ En attente'
+                '</span>'
+            )
+        elif obj.status == 'rejected':
+            return format_html(
+                '<span style="color: red; font-weight: bold;">'
+                '❌ Rejetée'
+                '</span>'
+            )
+        return obj.get_status_display()
+
+    status_colored.short_description = "Statut"
+    status_colored.admin_order_field = 'status'
+
+
+    # 2. Ordre CORRECT des champs dans le formulaire
+    fieldsets = (
+        ('Informations principales', {
+            'fields': (
+                'name',  # 1. Nom
+                'country',  # 2. Pays (AVANT wilaya)
+                'wilaya',  # 3. Wilaya
+                'city',  # 4. Ville
+                'village',  # 5. Village
+                'address',  # 6. Adresse
+            )
+        }),
+        ('Descriptions', {
+            'fields': (
+                'description',
+                'history',
+            )
+        }),
+        ('Coordonnées GPS', {
+            'fields': (
+                'latitude',
+                'longitude',
+            ),
+            'classes': ('collapse',)
+        }),
+        ('Contact & Photos', {
+            'fields': (
+                'contributor_email',
+                'photos_display',
+                # 'upload_photos',
+
+            )
+        }),
+        ('Statut', {
+            'fields': (
+                'status',  # CORRIGÉ: status au lieu de is_processed
+                'review_notes',  # CORRIGÉ: review_notes au lieu de admin_notes
+            )
+        }),
+
+        ('Actions', {
+            'fields': (),
+            'description': '''
+            <div style="background: #e8f5e8; padding: 15px; border-radius: 5px; margin-bottom: 20px;">
+                <form method="post" style="display: inline;">
+                    
+                    <button type="submit" name="_approve" value="1" 
+                            style="background: #4CAF50; color: white; padding: 10px 20px; 
+                                   border: none; border-radius: 4px; cursor: pointer;">
+                        ✅ Approuver et créer la mosquée
+                    </button>
+                </form>
+                <p style="margin-top: 10px; font-size: 12px; color: #666;">
+                    Cette action créera une mosquée dans la liste principale.
+                </p>
+            </div>
+        '''
+        }),
+    )
+
+    class Media:
+        js = (
+            'admin/js/toggle_wilaya.js',
+            'admin/js/photo_preview.js',  # Même script que MosqueAdmin
+            'admin/js/proposition_notifications.js',
+        )
+        css = {
+            'all': ('admin/css/photo_preview.css',)
+        }
+
+    def photo_count(self, obj):
+        # Puisque c'est maintenant un CloudinaryField, s'il existe, il y a 1 photo
+        return "📸 1" if obj.photos else "❌"
+
+    def apercu_photo(self, obj):
+        if obj.photos:
+            urls = obj.photos.split(',')
+            if urls:
+                # Affiche "📸 X" pour montrer combien de photos
+                return f"📸 {len(urls)}"
+        return "❌"
+
+    apercu_photo.short_description = "Photos"
+
+    def photos_display(self, obj):
+        if obj.photos:
+            urls = obj.photos.split(',')
+            html = '<div style="display:flex;gap:10px;flex-wrap:wrap;">'
+            for url in urls:
+                if url.strip():
+                    html += f'<a href="{url}" target="_blank"><img src="{url}" style="width:100px;height:100px;object-fit:cover;border-radius:5px;border:1px solid #ddd;"></a>'
+            html += '</div>'
+            return format_html(html)
+        return "—"
+
+    photos_display.short_description = "Toutes les photos"
+
+    # Changez readonly_fields :
+    readonly_fields = ('photos_display', 'created_at', 'contributor_ip', 'apercu_photo')
+
+    def response_change(self, request, obj):
+        """Quand l'admin clique sur 'Approuver' - Version AVEC traduction"""
+
+        # === SI L'ADMIN CLIQUE SUR "APPROUVER" ===
+        if '_approve' in request.POST:
+            from .models import Mosque, MosquePhoto
+            # IMPORT DE LA TRADUCTION (utilise la fonction qui existe réellement)
+            from mosques.utils.translation import translate_text_to_3_langs
+
+            # DEBUG : voir ce qui est envoyé à la traduction
+            print(f"=== DEBUG TRADUCTION ===")
+            print(f"Description à traduire: '{obj.description}'")
+            print(f"Histoire à traduire: '{obj.history}'")
+
+            # === 1. TRADUCTION DES TEXTES ===
+            # Utilise la fonction qui existe : translate_text_to_3_langs
+            desc_translated = translate_text_to_3_langs(obj.description or "")
+            hist_translated = translate_text_to_3_langs(obj.history or "")
+
+            # === 2. CRÉATION DE LA MOSQUÉE AVEC TEXTES TRADUITS ===
+            mosque = Mosque.objects.create(
+                # Informations de base
+                name=obj.name,
+                country=obj.country,
+                wilaya=obj.wilaya,
+                city=obj.city,
+                village=obj.village,
+                address=obj.address,
+                latitude=obj.latitude,
+                longitude=obj.longitude,
+
+                # Description originale (français par défaut)
+                description=obj.description or "",
+                history=obj.history or "",
+
+                # Champs multilingues (TRADUITS automatiquement)
+                description_fr=desc_translated['fr'],
+                description_ar=desc_translated['ar'],
+                description_en=desc_translated['en'],
+
+                history_fr=hist_translated['fr'],
+                history_ar=hist_translated['ar'],
+                history_en=hist_translated['en'],
+
+                is_verified=True,
+            )
+            print(f"✅ Mosquée créée: {mosque.id} - {mosque.name}")
+
+            # === 3. COPIE DES PHOTOS ===
+            photo_count = 0
+            if obj.photos:
+                urls = obj.photos.split(',')
+                for url in urls:
+                    url = url.strip()
+                    if url:
+                        MosquePhoto.objects.create(
+                            mosque=mosque,
+                            image=url,
+                            image_url=url,
+                            uploaded_by="Admin (proposition)",
+                            is_approved=True,
+                        )
+                        photo_count += 1
+
+            # === 4. MARQUER COMME APPROUVÉ ===
+            obj.status = 'approved'
+            obj.save()
+
+            # === 5. MESSAGE ET REDIRECTION ===
+            self.message_user(request, f"✅ Mosquée '{obj.name}' créée avec {photo_count} photo(s) !")
+            return redirect('admin:mosques_mosque_change', mosque.id)
+
+        # === SI C'EST JUSTE UNE SAUVEGARDE NORMALE ===
+        return super().response_change(request, obj)
