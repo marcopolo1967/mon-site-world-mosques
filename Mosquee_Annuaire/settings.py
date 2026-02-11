@@ -28,9 +28,9 @@ if os.environ.get('RENDER') != '1':
     try:
         from dotenv import load_dotenv
         load_dotenv()
-        print("✅ Variables d'environnement chargées depuis .env")
+        print("[OK] Variables d'environnement chargées depuis .env")
     except ImportError:
-        print("⚠️  python-dotenv non installé. Variables d'environnement non chargées.")
+        print("[WARN] python-dotenv non installé. Variables non chargées.")
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -55,14 +55,14 @@ ALLOWED_HOSTS = [
 RENDER_EXTERNAL_HOSTNAME = os.environ.get('RENDER_EXTERNAL_HOSTNAME')
 if RENDER_EXTERNAL_HOSTNAME:
     ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
-    print(f"✅ Hôte Render ajouté : {RENDER_EXTERNAL_HOSTNAME}")
+    print(f"[OK] Hôte Render ajouté : {RENDER_EXTERNAL_HOSTNAME}")
 
 # ==================== BASE DE DONNÉES ====================
 # Configuration flexible pour MySQL local et PostgreSQL sur Render
 
 if os.environ.get('RENDER', '') == '1':
     # CONFIGURATION POUR RENDER (PostgreSQL)
-    print("🔄 Chargement de la configuration base de données pour Render...")
+    print("[INFO] Chargement config base de données Render...")
     DATABASES = {
         'default': dj_database_url.config(
             conn_max_age=600,
@@ -71,7 +71,7 @@ if os.environ.get('RENDER', '') == '1':
     }
 else:
     # CONFIGURATION POUR LE DÉVELOPPEMENT LOCAL (MySQL)
-    print("🔄 Chargement de la configuration base de données locale (MySQL)...")
+    print("[INFO] Chargement de la configuration base de données locale (MySQL)...")
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.mysql',
@@ -82,7 +82,9 @@ else:
             'PORT': os.environ.get('LOCAL_DB_PORT', ''),
             'OPTIONS': {
                 'charset': 'utf8mb4',
-            }
+                'connect_timeout': 300,
+            },
+            'CONN_MAX_AGE': 600,
         }
     }
 
@@ -98,8 +100,6 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 # ==================== AUTRES PARAMÈTRES ====================
-# [Vos autres paramètres Django restent ici en dessous]
-# INSTALLED_APPS, MIDDLEWARE, TEMPLATES, etc.
 
 cloudinary.config(
     cloud_name=os.environ.get('CLOUDINARY_CLOUD_NAME'),
@@ -305,7 +305,7 @@ AXES_COOLOFF_TIME = 2
 # Réinitialisation du compteur après connexion réussie
 AXES_RESET_ON_SUCCESS = True
 
-# 🔐 Méthode MODERNE et recommandée
+
 # → Bloque par combinaison utilisateur + adresse IP
 AXES_LOCKOUT_PARAMETERS = ['username', 'ip_address']
 
@@ -350,6 +350,7 @@ CONTENT_SECURITY_POLICY = {
             "https://i.postimg.cc",
             "https://*.tile.openstreetmap.org",
             "https://unpkg.com",
+            "https://flagcdn.com"
         ),
 
         "connect-src": (
