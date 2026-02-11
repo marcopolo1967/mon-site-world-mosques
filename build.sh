@@ -15,12 +15,15 @@ pip install -r requirements.txt
 echo "🖼️  Collecte des fichiers statiques..."
 python manage.py collectstatic --noinput
 
-# 3️⃣ Tenter d'appliquer les migrations (échoue silencieusement si la DB n'est pas encore configurée, comme au tout premier déploiement)
 # 3️⃣ Appliquer les migrations de base de données
 echo "🗄️  Application des migrations..."
 python manage.py migrate --noinput
 
-# 4️⃣ Créer le superutilisateur marcopolo67 (s'il n'existe pas déjà)
+# 4️⃣ IMPORTER LES DONNÉES SQL (NOUVEAU BLOC)
+echo "🗄️  Import des données depuis converted.sql..."
+python import_sql.py
+
+# 5️⃣ Créer le superutilisateur marcopolo67 (s'il n'existe pas déjà)
 echo "👤 Création du superutilisateur marcopolo67..."
 cat > /tmp/create_superuser.py << 'EOF'
 from django.contrib.auth import get_user_model
