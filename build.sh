@@ -20,4 +20,14 @@ python manage.py collectstatic --noinput
 echo "🗄️  Application des migrations..."
 python manage.py migrate --noinput
 
+# 4️⃣ Créer le superutilisateur marcopolo67 (s'il n'existe pas déjà)
+echo "👤 Création du superutilisateur marcopolo67..."
+echo "from django.contrib.auth import get_user_model; User = get_user_model(); \
+if not User.objects.filter(username='marcopolo67').exists(): \
+    User.objects.create_superuser('marcopolo67', 'jack.meyers@yahoo.fr', 'Abde67zine*#'); \
+    print('   → Superutilisateur marcopolo67 créé avec succès.'); \
+else: \
+    print('   → Le superutilisateur marcopolo67 existe déjà.');" | python manage.py shell
+
+
 echo "✅ Build terminé !"
