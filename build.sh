@@ -19,9 +19,7 @@ python manage.py collectstatic --noinput
 echo "🗄️  Application des migrations..."
 python manage.py migrate --noinput
 
-# 4️⃣ IMPORTER LES DONNÉES (JSON)
-echo "🗄️  Import des données depuis mosques.json..."
-python manage.py loaddata mosques.json
+
 
 # 5️⃣ Créer le superutilisateur marcopolo67 (s'il n'existe pas déjà)
 echo "👤 Création du superutilisateur marcopolo67..."
