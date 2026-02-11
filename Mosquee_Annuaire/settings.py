@@ -350,7 +350,7 @@ CONTENT_SECURITY_POLICY = {
             "https://i.postimg.cc",
             "https://*.tile.openstreetmap.org",
             "https://unpkg.com",
-            "https://flagcdn.com"
+            "https://flagcdn.com",
         ),
 
         "connect-src": (
