@@ -1,4 +1,5 @@
 {% load i18n %}
+{% load honeypot %}
 <!DOCTYPE html>
 <html lang="{{ LANGUAGE_CODE }}" dir="{% if LANGUAGE_BIDI %}rtl{% else %}ltr{% endif %}">
 <head>
@@ -300,21 +301,23 @@
                     <div class="card-body p-4 p-md-5">
                         <form method="post" enctype="multipart/form-data">
                             {% csrf_token %}
+                            {% render_honeypot_field %}
 
                             <h4 class="section-title"><i class="bi bi-geo-alt-fill"></i>{% trans "Localisation" %}</h4>
 
                             <div class="row mb-4">
                                 <div class="col-md-12">
-                                    <label class="fw-bold mb-2">{% trans "Pays" %} <span class="text-danger">*</span></label>
+                                    <label class="fw-bold mb-2">{% trans "Pays" %} <span
+                                            class="text-danger">*</span></label>
                                     <input type="text" name="country" id="id_country" class="form-control"
-                                                placeholder="Algérie, France, etc." required
-                                                autocapitalize="words">
+                                           placeholder="Algérie, France, etc." required autocapitalize="words">
                                 </div>
                             </div>
 
                             <div class="row g-4 mb-4">
                                 <div class="col-md-6">
-                                    <label class="fw-bold mb-2">{% trans "Nom de la mosquée" %} <span class="text-danger">*</span></label>
+                                    <label class="fw-bold mb-2">{% trans "Nom de la mosquée" %} <span
+                                            class="text-danger">*</span></label>
                                     {{ form.name }}
                                 </div>
                                 <div class="col-md-6">
@@ -335,94 +338,84 @@
                                 </div>
 
                                 <div class="col-md-6" id="field-international">
-                                    <label class="fw-bold mb-2">{% trans "Province / Région / État" %} <span class="text-danger">*</span></label>
-                                    <input type="text" name="international_region" id="id_international_region" class="form-control" placeholder="Ex: Île-de-France, Québec...">
+                                    <label class="fw-bold mb-2">{% trans "Province / Région / État" %} <span
+                                            class="text-danger">*</span></label>
+                                    <input type="text" name="international_region" id="id_international_region"
+                                           class="form-control"
+                                           placeholder="Ex: Île-de-France, Québec...">
                                 </div>
                             </div>
 
-
                             <div class="row g-4 mb-4">
                                 <div class="col-md-6">
-                                    <label class="fw-bold mb-2">{% trans "Latitude" %} </label>
+                                    <label class="fw-bold mb-2">{% trans "Latitude" %}</label>
                                     <input type="text" name="latitude" id="id_latitude" class="form-control"
                                            placeholder="Ex: 36.752887 (utilisez un point, non pas une virgule)" required
                                            pattern="-?\d{1,3}\.\d{1,8}" title="Format: 36.752887 - Utilisez un point .">
                                     <small class="text-muted">Coordonnée Nord/Sud (utilisez un point .)</small>
                                 </div>
                                 <div class="col-md-6">
-                                    <label class="fw-bold mb-2">{% trans "Longitude" %} </label>
+                                    <label class="fw-bold mb-2">{% trans "Longitude" %}</label>
                                     <input type="text" name="longitude" id="id_longitude" class="form-control"
-                                            placeholder="Ex: 3.042048 (utilisez un point, non pas une virgule)" required
-                                            pattern="-?\d{1,3}\.\d{1,8}" title="Format: 3.042048 - Utilisez un point .">
+                                           placeholder="Ex: 3.042048 (utilisez un point, non pas une virgule)" required
+                                           pattern="-?\d{1,3}\.\d{1,8}" title="Format: 3.042048 - Utilisez un point .">
                                     <small class="text-muted">Coordonnée Est/Ouest (utilisez un point .)</small>
                                 </div>
                             </div>
 
-
-                            <h4 class="section-title"><i class="bi bi-card-text"></i> {% trans "Détails & Histoire" %}</h4>
+                            <h4 class="section-title"><i class="bi bi-card-text"></i> {% trans "Détails & Histoire" %}
+                            </h4>
                             <div class="row">
                                 <div class="col-12 mb-4">
                                     <label class="fw-bold mb-2 d-block">{% trans "Description générale" %} :</label>
                                     {{ form.description }}
                                 </div>
                                 <div class="col-12 mb-4">
-                                    <label class="fw-bold mb-2 d-block">{% trans "Histoire ou particularités" %} :</label>
+                                    <label class="fw-bold mb-2 d-block">{% trans "Histoire ou particularités" %}
+                                        :</label>
                                     {{ form.history }}
                                 </div>
                             </div>
 
-                            <h4 class="section-title"><i class="bi bi-images"></i> {% trans "Photos de la mosquée (Max 5)" %}</h4>
+                            <h4 class="section-title"><i
+                                    class="bi bi-images"></i> {% trans "Photos de la mosquée (Max 5)" %}</h4>
                             <div class="photo-upload-box mb-4">
-                                <label for="images_mosquee" class="fw-bold d-block mb-3">
-                                    {% trans "Sélectionnez vos photos (jusqu'à 5 max)" %}
-                                </label>
-
-                                <!-- Conteneur pour styliser le bouton -->
+                                <label for="images_mosquee"
+                                       class="fw-bold d-block">{% trans "Sélectionnez vos photos (jusqu'à 5 max)" %}</label>
                                 <div class="custom-file-input">
-                                    <!-- Le texte qui remplace "Sélectionner fichier(s)" -->
-                                    <span class="file-input-label">
-                                        <i class="bi bi-camera-fill me-2"></i>
-                                        {% trans "Cliquez ici pour sélectionner des photos" %}
-                                    </span>
+            <span class="file-input-label">
+                <i class="bi bi-camera-fill me-2"></i>{% trans "Cliquez ici pour sélectionner des photos" %}
+            </span>
                                     <input type="file" name="photos" id="images_mosquee" class="form-control"
                                            accept="image/*" multiple title="{% trans 'Sélectionner des photos' %}">
                                 </div>
                                 <div id="preview-container"
-                                     class="d-flex flex-wrap justify-content-center gap-3 mt-3">
+                                     class="d-flex flex-wrap justify-content-center gap-3 mt-3"></div>
+                            </div>
+
+                            <h4 class="section-title"><i class="bi bi-shield-check"></i>{% trans "Validation finale" %}
+                            </h4>
+                            <div class="p-4 rounded-4 border bg-light mb-4">
+                                <div class="mb-4">
+                                    <label class="fw-bold mb-2">{% trans "Votre adresse e-mail" %}</label>
+                                    {{ form.contributor_email }}
+                                </div>
+                                <div class="form-check p-3 bg-white rounded-3 border-start border-4 border-success shadow-sm">
+                                    {{ form.confirmation }}
+                                    <label class="form-check-label fw-bold ms-2"
+                                           for="{{ form.confirmation.id_for_label }}">
+                                        {% trans "Je certifie l'exactitude des données transmises." %} <span
+                                            class="text-danger">*</span>
+                                    </label>
                                 </div>
                             </div>
 
-                            {% load i18n %}
-                            {% load honeypot %}
-
-                            <form method="post" enctype="multipart/form-data">
-                                {% csrf_token %}
-                                {% render_honeypot_field %}
-
-                                <h4 class="section-title"><i
-                                        class="bi bi-shield-check"></i>{% trans "Validation finale" %}</h4>
-
-                                <div class="p-4 rounded-4 border bg-light mb-4">
-                                    <div class="mb-4">
-                                        <label class="fw-bold mb-2">{% trans "Votre adresse e-mail" %}</label>
-                                        {{ form.contributor_email }}
-                                    </div>
-                                    <div class="form-check p-3 bg-white rounded-3 border-start border-4 border-success shadow-sm">
-                                        {{ form.confirmation }}
-                                        <label class="form-check-label fw-bold ms-2"
-                                               for="{{ form.confirmation.id_for_label }}">
-                                            {% trans "Je certifie l'exactitude des données transmises." %} <span
-                                                class="text-danger">*</span>
-                                        </label>
-                                    </div>
-                                </div>
-
-                                <button type="submit" class="btn btn-submit shadow-lg">
-                                    <i class="bi bi-cloud-arrow-up-fill me-2"></i>{% trans "Soumettre ma proposition" %}
-                                </button>
-                            </form>
-
+                            <button type="submit" class="btn btn-submit shadow-lg">
+                                <i class="bi bi-cloud-arrow-up-fill me-2"></i>{% trans "Soumettre ma proposition" %}
+                            </button>
                         </form>
+
+
                     </div>
                 </div>
             </div>

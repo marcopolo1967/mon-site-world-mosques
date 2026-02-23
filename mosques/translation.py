@@ -3,7 +3,10 @@ from .models import Mosque, Proposition
 
 @register(Mosque)
 class MosqueTranslationOptions(TranslationOptions):
-    fields = ('description', 'history')
+    fields = ('name', 'description', 'history')
+    # Remplace empty_values par ceci :
+    required_languages = []
+
 
 @register(Proposition)
 class PropositionTranslationOptions(TranslationOptions):

@@ -35,26 +35,33 @@ def proposer_mosquee(request):
             x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
             ip = x_forwarded_for.split(',')[0] if x_forwarded_for else request.META.get('REMOTE_ADDR')
             proposition.contributor_ip = ip
-
-            # Gestion des photos
+            proposition.save()  # On sauvegarde d'abord la proposition pour avoir un ID
+            print("--- DEBUG PHOTOS ---")
+            print("FILES reçus :", request.FILES)
+            # On change 'photo_files' par 'photos' pour correspondre au name="photos" du HTML
             files = request.FILES.getlist('photos')
-            photo_urls = []
+            print("Liste extraite :", files)
+            photo_count = 0
 
             if files:
-                for f in files[:5]:
+                for f in files[:5]:  # Limite à 5 photos max
                     try:
-                        upload_result = cloudinary.uploader.upload(f)
-                        photo_urls.append(upload_result['secure_url'])
-                    except Exception:
+                        # Avec CloudinaryField, on passe directement le fichier 'f'
+                        # au champ 'image'. Django et Cloudinary gèrent l'upload.
+                        from .models import PropositionPhoto
+                        PropositionPhoto.objects.create(
+                            proposition=proposition,
+                            image=f
+                        )
+                        photo_count += 1
+                    except Exception as e:
+                        print(f"Erreur upload photo: {e}")
                         continue
-
-            proposition.photos = ','.join(photo_urls)
-            proposition.save()
 
             messages.success(
                 request,
-                '✅ <strong>Merci pour votre proposition !</strong><br>'
-                'Votre proposition a été enregistrée et sera examinée par notre équipe.'
+                f'✅ <strong>Merci pour votre proposition !</strong><br>'
+                f'Votre proposition a été enregistrée avec {photo_count} photo(s) et sera examinée par notre équipe.'
             )
             return redirect('proposer')
     else:

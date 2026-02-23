@@ -1,0 +1,7 @@
+[
+{
+  "model": "mosques.country",
+  "pk": 1,
+  "fields": {
+    "name_fr": "Algérie",
+    "name_ar": 

@@ -80,7 +80,12 @@ class Mosque(models.Model):
     """Modèle principal pour une mosquée"""
 
     # === IDENTIFICATION ===
-    name = models.CharField(max_length=255, verbose_name="Nom de la mosquée")
+    name = models.CharField(
+        max_length=255,
+        verbose_name="Nom de la mosquée",
+        blank=True,
+        null=True
+    )
 
     # === LOCALISATION GÉOGRAPHIQUE ===
     # 1. Le nouveau lien propre (ForeignKey)
@@ -103,7 +108,7 @@ class Mosque(models.Model):
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
-        verbose_name="Pays/Wilaya"
+        verbose_name="Wilaya"
     )
 
     city = models.CharField(max_length=100, verbose_name="Ville/Commune")
@@ -189,6 +194,77 @@ class Mosque(models.Model):
         """Vérifie si la mosquée doit apparaître sur la carte"""
         return self.is_verified and self.has_coordinates
 
+    def save(self, *args, **kwargs):
+        from mosques.utils.translation import translate_text_to_3_langs
+
+        # --- 1. RÉCUPÉRATION DES VALEURS BRUTES ---
+        # On utilise __dict__.get pour lire la base de données sans la magie de Django
+        n_fr = (self.__dict__.get('name_fr', "") or "").strip()
+        n_ar = (self.__dict__.get('name_ar', "") or "").strip()
+        n_en = (self.__dict__.get('name_en', "") or "").strip()
+
+        # --- 2. DÉTECTION DU "FAUX" FRANÇAIS ---
+        # Si le formulaire est soumis en Anglais, Django copie souvent l'Anglais dans le champ FR.
+        # On vérifie si n_fr est juste une copie de n_ar ou n_en.
+        is_fr_fake = (n_fr == n_ar and n_ar != "") or (n_fr == n_en and n_en != "")
+
+        # --- 3. GESTION DES NOMS ---
+        # Sécurité : On bloque si vraiment rien n'est saisi
+        if not n_fr and not n_ar and not n_en:
+            from django.core.exceptions import ValidationError
+            raise ValidationError("Vous devez remplir au moins un nom (Français, Arabe ou Anglais).")
+
+        # On traduit si le FR est vide OU s'il contient une copie auto (fake)
+        # OU si l'un des deux autres (AR/EN) est vide.
+        if (not n_fr or is_fr_fake) or not n_ar or not n_en:
+            # On définit la source de traduction (la première langue disponible et non suspecte)
+            # Si le FR est suspect, on privilégie l'AR ou l'EN comme source.
+            source_name = n_ar or n_en or n_fr
+
+            if source_name:
+                t_names = translate_text_to_3_langs(source_name)
+
+                # On remplit le Français si il était vide ou fake
+                if not n_fr or is_fr_fake: self.name_fr = t_names['fr']
+                # On remplit les autres si ils sont vides
+                if not n_ar: self.name_ar = t_names['ar']
+                if not n_en: self.name_en = t_names['en']
+
+        # --- 4. GESTION DE L'HISTORIQUE ET DESCRIPTION ---
+        h_fr = (self.__dict__.get('history_fr', "") or "").strip()
+        d_fr = (self.__dict__.get('description_fr', "") or "").strip()
+
+        # Phrases par défaut
+        def_h_ar, def_h_en = "لا يوجد تاريخ متاح حاليا", "No history available at the moment"
+        def_d_ar, def_d_en = "لا يوجد وصف متاح حاليا", "No description available at the moment"
+
+        # Traitement Histoire : Traduction si FR est saisi
+        if h_fr:
+            # On traduit si AR ou EN sont vides ou ont encore la phrase par défaut
+            if (not self.history_ar or self.history_ar == def_h_ar) or \
+                    (not self.history_en or self.history_en == def_h_en):
+                t_hist = translate_text_to_3_langs(h_fr)
+                self.history_ar = t_hist['ar']
+                self.history_en = t_hist['en']
+        else:
+            # Sinon, on remet les phrases par défaut
+            self.history_ar = def_h_ar
+            self.history_en = def_h_en
+
+        # Traitement Description : Traduction si FR est saisi
+        if d_fr:
+            # On traduit si AR ou EN sont vides ou ont encore la phrase par défaut
+            if (not self.description_ar or self.description_ar == def_d_ar) or \
+                    (not self.description_en or self.description_en == def_d_en):
+                t_desc = translate_text_to_3_langs(d_fr)
+                self.description_ar = t_desc['ar']
+                self.description_en = t_desc['en']
+        else:
+            self.description_ar = def_d_ar
+            self.description_en = def_d_en
+
+        super().save(*args, **kwargs)
+
 #==========================================================
 #  STOCKAGE DES PROPOSTIONS DES VISITEURS
 #==========================================================
@@ -222,13 +298,7 @@ class Proposition(models.Model):
     description = models.TextField(blank=True, verbose_name="Description")
     history = models.TextField(blank=True, verbose_name="Historique")
 
-    # Photos (stockées avec Cloudinary pour permettre l'affichage)
-    photos = models.TextField(  # ← Déjà TextField, mais peut-être limité
-        blank=True,
-        verbose_name="Photos",
-        help_text="URLs Cloudinary séparées par des virgules"
 
-    )
 
     # Informations du contributeur
     contributor_email = models.EmailField(blank=True, verbose_name="Email du contributeur")
@@ -279,6 +349,23 @@ class Proposition(models.Model):
         self.save()
         return mosque
 
+class PropositionPhoto(models.Model):
+    proposition = models.ForeignKey(
+        Proposition,
+        on_delete=models.CASCADE,
+        related_name='proposition_photos'  # Changer ici pour éviter le clash
+    )
+
+    image = CloudinaryField(
+        'image',
+        upload_preset='mosquee_standard'
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Photo pour {self.proposition.name}"
+
 
 from django.core.exceptions import ValidationError
 
@@ -298,7 +385,7 @@ class MosquePhoto(models.Model):
     image = CloudinaryField(
         'image',
         upload_preset='mosquee_standard',  # On le met directement ici
-        validators=[validate_image_size]
+
     )
 
     uploaded_by = models.CharField(max_length=100, default='Admin')

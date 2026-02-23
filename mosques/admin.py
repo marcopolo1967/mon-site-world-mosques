@@ -1,6 +1,6 @@
 from django.contrib import admin, messages
 from modeltranslation.admin import TranslationAdmin
-from .models import Wilaya, Mosque, MosquePhoto, Proposition, MosqueWithPhotos, Country, Proposition
+from .models import Wilaya, Mosque, MosquePhoto, Proposition, MosqueWithPhotos, Country, Proposition, PropositionPhoto
 from .forms import MosqueAdminForm
 from django.utils import timezone
 from django import forms
@@ -15,110 +15,23 @@ from django.forms.widgets import ClearableFileInput
 from django.forms import FileInput
 from mosques.utils.translation import translate_text_to_3_langs
 
-#from deep_translator import GoogleTranslator  # Ajout du traducteur
-#import time # Pour éviter de saturer l'API
 
-
-# ====================================================================
-# WIDGET UPLOAD MULTIPLE
-# ====================================================================
-
-class MultipleFileInput(forms.ClearableFileInput):
-    allow_multiple_selected = True
-
-    def __init__(self, attrs=None):
-        default_attrs = {'multiple': 'multiple'}
-        if attrs:
-            default_attrs.update(attrs)
-        super().__init__(default_attrs)
-
-
-# ====================================================================
-# FORMULAIRE MOSQUEE AVEC UPLOAD MULTIPLE
-# ====================================================================
-
-
-class MosqueAdminForm(forms.ModelForm):
-    bulk_photos = forms.FileField(
-        widget=MultipleFileInput(attrs={
-            'multiple': 'multiple',
-            'accept': 'image/*'
-        }),
-        required=False,
-        label="📸 Télécharger des photos"
-    )
-
-    class Meta:
-        model = Mosque
-        fields = "__all__"
-
-    def save(self, commit=True):
-        # 1️⃣ On sauvegarde d'abord la mosquée
-        instance = super().save(commit=False)
-
-        if commit:
-            instance.save()  # ⚠️ OBLIGATOIRE avant les photos
-
-        # 2️⃣ Gestion des photos (optionnelles)
-        files = self.files.getlist("bulk_photos")
-        for file in files:
-            MosquePhoto.objects.create(
-                mosque=instance,
-                image=file,
-                uploaded_by="Admin",
-                is_approved=True,
-            )
-
-        # 3️⃣ Traduction automatique
-        try:
-            translator = Translator()
-
-            # DESCRIPTION
-            if instance.description:
-                instance.description_fr = instance.description_fr or instance.description
-                instance.description_en = instance.description_en or translator.translate(
-                    instance.description, dest="en"
-                ).text
-                instance.description_ar = instance.description_ar or translator.translate(
-                    instance.description, dest="ar"
-                ).text
-
-            # HISTOIRE
-            if instance.history:
-                instance.history_fr = instance.history_fr or instance.history
-                instance.history_en = instance.history_en or translator.translate(
-                    instance.history, dest="en"
-                ).text
-                instance.history_ar = instance.history_ar or translator.translate(
-                    instance.history, dest="ar"
-                ).text
-
-        except Exception as e:
-            print("⚠️ Traduction échouée:", e)
-
-        if commit:
-            instance.save()
-
-        return instance
-
-
-# ====================================================================
-# ADMIN PRINCIPAL DES MOSQUÉES (SIMPLIFIÉ)
-# ====================================================================
-
-# ================================================
-# INLINE POUR LES PHOTOS : permet d'éditer caption
-# directement dans la page d'édition de la mosquée
-# ================================================
 class MosquePhotoInline(admin.TabularInline):
-    model = MosquePhoto  # Le modèle lié
-    extra = 1
-    fields = ('image', 'caption', 'is_approved', 'uploaded_by', 'created_at')
-    readonly_fields = ('uploaded_by', 'created_at')  # Admin ne peut pas changer qui a uploadé ni la date
-    show_change_link = True  # Permet de cliquer sur la ligne pour voir la photo en détail
+    model = MosquePhoto
+    extra = 3  # Affiche 3 emplacements vides par défaut
+    fields = ('image', 'caption', 'is_approved', 'uploaded_by')
+    readonly_fields = ('uploaded_by',)
+
+    # Cette option permet de voir la miniature dans l'inline
+    def image_preview(self, obj):
+        if obj.image:
+            return format_html('<img src="{}" style="width: 100px; height: auto; border-radius: 4px;"/>', obj.image.url)
+        return "Pas d'image"
+
+    readonly_fields = ('image_preview',)
+    fields = ('image', 'image_preview', 'caption', 'is_approved')
 
     def has_delete_permission(self, request, obj=None):
-        """Autorise toujours la suppression depuis l'inline"""
         return True
 
 
@@ -126,15 +39,14 @@ class MosquePhotoInline(admin.TabularInline):
 # ADMIN PRINCIPAL DE LA MOSQUÉE
 # ================================================
 @admin.register(Mosque)
-class MosqueAdmin(admin.ModelAdmin):
-    form = MosqueAdminForm  # Formulaire personnalisé si besoin
+class MosqueAdmin(TranslationAdmin):
 
 
     list_display = ('name', 'country_link', 'display_wilaya', 'city', 'photo_count_display', 'view_photos_link')
     list_filter = ('country_link', 'wilaya', 'is_verified')
     search_fields = ('name', 'city', 'village', 'address')
     list_per_page = 50
-    readonly_fields = ('photos', 'created_at', 'updated_at', 'current_photos_preview')
+    readonly_fields = ('created_at', 'updated_at', 'current_photos_preview', 'upload_photos_field')
 
     # ================================================
     # MEDIA : scripts et CSS personnalisés
@@ -200,21 +112,33 @@ class MosqueAdmin(admin.ModelAdmin):
     # ================================================
     # FIELDSETS POUR LA PAGE D'ÉDITION
     # ================================================
+
+    group_fieldsets = True  # Regroupe les champs traduits si besoin
+
     fieldsets = (
         ('Informations principales', {
-            'fields': ('name', 'country_link', 'country', 'wilaya', 'city', 'village', 'address')
+            'fields': (
+                'name_fr', 'name_ar', 'name_en',  # On remplace 'name' par les 3 langues
+                'country_link', 'wilaya', 'city', 'village', 'address'
+            )
         }),
+
         ('Coordonnées GPS', {
             'fields': ('latitude', 'longitude'),
             'classes': ('collapse',)
         }),
-        ('Photos', {
-            'fields': ('bulk_photos', 'main_photo', 'current_photos_preview'),
-            'description': 'Utilisez le champ ci-dessus pour ajouter plusieurs photos à la fois'
+
+        ('Gestion des Photos', {
+            # La virgule après 'upload_photos_field' est cruciale si c'était le seul élément,
+            # mais ici on met les deux :
+            'fields': ('current_photos_preview', 'upload_photos_field'),
+            'description': 'L\'aperçu montre les photos actuelles. Utilisez le champ ci-dessous pour en ajouter plusieurs d\'un coup.'
         }),
+
         ('Description et Histoire', {
-            'fields': ('description', 'history'),
+            'fields': ('description_fr', 'history_fr'),
         }),
+
         ('Modération', {
             'fields': ('is_verified',),
             'classes': ('collapse',)
@@ -224,6 +148,34 @@ class MosqueAdmin(admin.ModelAdmin):
             'classes': ('collapse',)
         }),
     )
+
+    def save_model(self, request, obj, form, change):
+        super().save_model(request, obj, form, change)
+        files = request.FILES.getlist('bulk_photos')
+
+        if files:
+            from .models import MosquePhoto
+            photo_count = 0
+            for f in files:
+                # 2. On ajoute 'is_approved=True' (ou le nom exact de votre champ de validation)
+                # Vérifiez dans votre modèle MosquePhoto si le champ s'appelle 'is_approved' ou 'is_verified'
+                MosquePhoto.objects.create(
+                    mosque=obj,
+                    image=f,
+                    is_approved=True
+                )
+                photo_count += 1
+
+            self.message_user(request, f"✅ {photo_count} photos ajoutées et approuvées automatiquement.")
+
+    # LA MÉTHODE DOIT ÊTRE À L'INTÉRIEUR DE LA CLASSE
+    def upload_photos_field(self, obj):
+        return format_html(
+            '<input type="file" name="bulk_photos" multiple accept="image/*" class="form-control" style="max-width: 300px;">'
+        )
+
+    upload_photos_field.short_description = "➕ Ajouter des photos"
+
 
     # ================================================
     # APERÇU DES PHOTOS EXISTANTES DANS LA PAGE D'EDIT
@@ -345,6 +297,16 @@ class MosqueAdmin(admin.ModelAdmin):
         return redirect('admin:mosque_photos_detail', mosque_id=mosque_id)
 
 
+class PropositionPhotoInline(admin.TabularInline):
+    model = PropositionPhoto
+    extra = 1
+    fields = ('image', 'created_at')
+    readonly_fields = ('created_at',)
+    show_change_link = True
+
+    def has_delete_permission(self, request, obj=None):
+        return True
+
 # ====================================================================
 # ADMIN SPÉCIAL POUR VOIR TOUTES LES MOSQUÉES AVEC PHOTOS
 # ====================================================================
@@ -416,12 +378,9 @@ class WilayaAdmin(admin.ModelAdmin):
 
 
 class PropositionAdminForm(forms.ModelForm):
-    # Champ TEMPORAIRE pour upload
-    upload_photos = forms.FileField(
-        widget=MultipleFileInput(attrs={'accept': 'image/*'}),
+    photos = forms.FileField(
         required=False,
-        label="📸 Télécharger des photos",
-        help_text="Les URLs seront générées automatiquement"
+        label="📸 Ajouter des photos"
     )
 
     class Meta:
@@ -432,7 +391,7 @@ class PropositionAdminForm(forms.ModelForm):
         instance = super().save(commit=commit)
 
         # 1. Gestion des photos (CORRECTION : enumerate donne (index, file))
-        files = self.files.getlist('bulk_photos') if 'bulk_photos' in self.files else []
+        files = self.files.getlist('photos') if 'photos' in self.files else []
         if files:
             for index, file in enumerate(files):  # CORRECTION ICI
                 MosquePhoto.objects.create(
@@ -500,7 +459,8 @@ class PropositionAdminForm(forms.ModelForm):
 @admin.register(Proposition)
 class PropositionAdmin(admin.ModelAdmin):
 
-    form = PropositionAdminForm
+
+    readonly_fields = ('created_at', 'photos_display')
 
     # 1. Configuration de la liste
     list_display = ('name', 'country', 'wilaya', 'city', 'created_at', 'status_colored', 'apercu_photo')
@@ -564,7 +524,7 @@ class PropositionAdmin(admin.ModelAdmin):
         ('Informations principales', {
             'fields': (
                 'name',  # 1. Nom
-                'country',  # 2. Pays (AVANT wilaya)
+                'country',  # 2. Pays
                 'wilaya',  # 3. Wilaya
                 'city',  # 4. Ville
                 'village',  # 5. Village
@@ -584,38 +544,34 @@ class PropositionAdmin(admin.ModelAdmin):
             ),
             'classes': ('collapse',)
         }),
-        ('Contact & Photos', {
+        ('Contact', {
             'fields': (
                 'contributor_email',
-                'photos_display',
-                # 'upload_photos',
-
             )
+        }),
+        ('Photos reçues', {
+            'fields': ('photos_display',),
         }),
         ('Statut', {
             'fields': (
-                'status',  # CORRIGÉ: status au lieu de is_processed
-                'review_notes',  # CORRIGÉ: review_notes au lieu de admin_notes
+                'status',
+                'review_notes',
             )
         }),
-
         ('Actions', {
             'fields': (),
-            'description': '''
-            <div style="background: #e8f5e8; padding: 15px; border-radius: 5px; margin-bottom: 20px;">
-                <form method="post" style="display: inline;">
-                    
-                    <button type="submit" name="_approve" value="1" 
-                            style="background: #4CAF50; color: white; padding: 10px 20px; 
-                                   border: none; border-radius: 4px; cursor: pointer;">
-                        ✅ Approuver et créer la mosquée
-                    </button>
-                </form>
-                <p style="margin-top: 10px; font-size: 12px; color: #666;">
-                    Cette action créera une mosquée dans la liste principale.
-                </p>
-            </div>
-        '''
+            'description': format_html('''
+                    <div style="background: #e8f5e8; padding: 15px; border-radius: 5px; margin-bottom: 20px;">
+                        <button type="submit" name="_approve" value="1" 
+                                style="background: #4CAF50; color: white; padding: 10px 20px; 
+                                       border: none; border-radius: 4px; cursor: pointer; font-weight: bold;">
+                            ✅ Approuver et créer la mosquée
+                        </button>
+                        <p style="margin-top: 10px; font-size: 12px; color: #666;">
+                            Cette action créera une mosquée dans la liste principale et transférera les photos.
+                        </p>
+                    </div>
+                ''')
         }),
     )
 
@@ -634,53 +590,38 @@ class PropositionAdmin(admin.ModelAdmin):
         return "📸 1" if obj.photos else "❌"
 
     def apercu_photo(self, obj):
-        if obj.photos:
-            urls = obj.photos.split(',')
-            if urls:
-                # Affiche "📸 X" pour montrer combien de photos
-                return f"📸 {len(urls)}"
+        first_photo = obj.proposition_photos.first()
+        if first_photo:
+            return format_html('<img src="{}" style="width:50px;height:50px;object-fit:cover;border-radius:4px;">', first_photo.image.url)
         return "❌"
 
-    apercu_photo.short_description = "Photos"
-
     def photos_display(self, obj):
-        if obj.photos:
-            urls = obj.photos.split(',')
-            html = '<div style="display:flex;gap:10px;flex-wrap:wrap;">'
-            for url in urls:
-                if url.strip():
-                    html += f'<a href="{url}" target="_blank"><img src="{url}" style="width:100px;height:100px;object-fit:cover;border-radius:5px;border:1px solid #ddd;"></a>'
-            html += '</div>'
-            return format_html(html)
-        return "—"
+        count = obj.proposition_photos.count()
+        if count == 0:
+            return format_html('<b style="color:red;">Zéro photo trouvée en base de données pour l\'ID {}</b>', obj.id)
 
-    photos_display.short_description = "Toutes les photos"
+        html = f'<b>Nombre de photos : {count}</b><br><div style="display:flex; gap:10px;">'
+        for p in obj.proposition_photos.all():
+            if p.image:
+                html += f'<img src="{p.image.url}" style="width:100px; height:100px; object-fit:cover;">'
+        html += '</div>'
+        return format_html(html)
 
-    # Changez readonly_fields :
-    readonly_fields = ('photos_display', 'created_at', 'contributor_ip', 'apercu_photo')
 
     def response_change(self, request, obj):
-        """Quand l'admin clique sur 'Approuver' - Version AVEC traduction"""
+        """Quand l'admin clique sur 'Approuver' - Version AVEC traduction et multi-photos Cloudinary"""
 
-        # === SI L'ADMIN CLIQUE SUR "APPROUVER" ===
         if '_approve' in request.POST:
             from .models import Mosque, MosquePhoto
-            # IMPORT DE LA TRADUCTION (utilise la fonction qui existe réellement)
             from mosques.utils.translation import translate_text_to_3_langs
+            from django.utils import timezone
 
-            # DEBUG : voir ce qui est envoyé à la traduction
-            print(f"=== DEBUG TRADUCTION ===")
-            print(f"Description à traduire: '{obj.description}'")
-            print(f"Histoire à traduire: '{obj.history}'")
-
-            # === 1. TRADUCTION DES TEXTES ===
-            # Utilise la fonction qui existe : translate_text_to_3_langs
+            # Traduction des textes
             desc_translated = translate_text_to_3_langs(obj.description or "")
             hist_translated = translate_text_to_3_langs(obj.history or "")
 
-            # === 2. CRÉATION DE LA MOSQUÉE AVEC TEXTES TRADUITS ===
+            # Création de la mosquée
             mosque = Mosque.objects.create(
-                # Informations de base
                 name=obj.name,
                 country=obj.country,
                 wilaya=obj.wilaya,
@@ -689,47 +630,49 @@ class PropositionAdmin(admin.ModelAdmin):
                 address=obj.address,
                 latitude=obj.latitude,
                 longitude=obj.longitude,
-
-                # Description originale (français par défaut)
                 description=obj.description or "",
                 history=obj.history or "",
-
-                # Champs multilingues (TRADUITS automatiquement)
                 description_fr=desc_translated['fr'],
                 description_ar=desc_translated['ar'],
                 description_en=desc_translated['en'],
-
                 history_fr=hist_translated['fr'],
                 history_ar=hist_translated['ar'],
                 history_en=hist_translated['en'],
-
                 is_verified=True,
             )
-            print(f"✅ Mosquée créée: {mosque.id} - {mosque.name}")
 
-            # === 3. COPIE DES PHOTOS ===
+            # === 3. COPIE DES PHOTOS DE LA PROPOSITION ===
             photo_count = 0
-            if obj.photos:
-                urls = obj.photos.split(',')
-                for url in urls:
-                    url = url.strip()
-                    if url:
-                        MosquePhoto.objects.create(
-                            mosque=mosque,
-                            image=url,
-                            image_url=url,
-                            uploaded_by="Admin (proposition)",
-                            is_approved=True,
-                        )
-                        photo_count += 1
 
-            # === 4. MARQUER COMME APPROUVÉ ===
+            # Récupération des photos liées via le modèle PropositionPhoto
+            photos_a_copier = obj.proposition_photos.all()
+
+            for prop_photo in photos_a_copier:
+                MosquePhoto.objects.create(
+                    mosque=mosque,
+                    image=prop_photo.image,  # Copie la référence Cloudinary
+                    uploaded_by=f"Contributeur ({obj.contributor_email or 'Anonyme'})",
+                    is_approved=True,
+                )
+                photo_count += 1
+
+            # Mise à jour de la photo principale de la mosquée avec la première photo
+            if photos_a_copier.exists():
+                mosque.main_photo = photos_a_copier.first().image
+                mosque.save()
+
+            # Marquer la proposition comme approuvée
             obj.status = 'approved'
+            obj.reviewed_at = timezone.now()
             obj.save()
 
-            # === 5. MESSAGE ET REDIRECTION ===
-            self.message_user(request, f"✅ Mosquée '{obj.name}' créée avec {photo_count} photo(s) !")
+            # Message pour l'admin
+            self.message_user(
+                request,
+                f"✅ Mosquée '{obj.name}' créée avec {photo_count} photo(s) !"
+            )
+
             return redirect('admin:mosques_mosque_change', mosque.id)
 
-        # === SI C'EST JUSTE UNE SAUVEGARDE NORMALE ===
+        # Si sauvegarde normale
         return super().response_change(request, obj)

@@ -1,15 +1,17 @@
 // static/admin/js/toggle_wilaya.js
 document.addEventListener('DOMContentLoaded', function() {
     // 1. On cible les champs par leurs IDs générés par Django
-    const countryField = document.querySelector('#id_country');
+    const countryField = document.querySelector('#id_country_link');
     // On cible la ligne entière de la Wilaya (le conteneur div)
     const wilayaRow = document.querySelector('.field-wilaya');
 
     function checkCountry() {
         if (!countryField || !wilayaRow) return;
 
-        // On affiche si c'est Algérie (ou vide par défaut)
-        if (countryField.value === 'Algérie' || countryField.value === 'DZ' || countryField.value === '') {
+        const selectedText = countryField.options[countryField.selectedIndex].text.trim();
+
+        // Affiche la Wilaya uniquement si le pays sélectionné contient "Algérie"
+        if (selectedText.includes("Algérie") || selectedText.includes("Algerie")) {
             wilayaRow.style.display = 'block';
         } else {
             wilayaRow.style.display = 'none';

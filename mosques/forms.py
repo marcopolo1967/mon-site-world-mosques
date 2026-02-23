@@ -23,7 +23,7 @@ class PropositionForm(forms.ModelForm):
             'name', 'country', 'wilaya', 'city', 'village',
             'address', 'latitude', 'longitude',  # Déplacés AVANT description
             'description', 'history',
-            'contributor_email', 'photos'  # photos à la fin
+            'contributor_email'
         ]
         labels = {
             'name': 'Nom de la mosquée *',
