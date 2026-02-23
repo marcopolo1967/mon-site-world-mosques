@@ -31,6 +31,19 @@ if os.environ.get('RENDER') != '1':
         print("[OK] Variables d'environnement chargées depuis .env")
     except ImportError:
         print("[WARN] python-dotenv non installé. Variables non chargées.")
+else:
+    # --- AJOUTE CES LIGNES ICI ---
+    # Si on est sur Render, on force la migration au démarrage
+    from django.core.management import call_command
+    import django
+    try:
+        django.setup()
+        call_command('migrate', interactive=False)
+        print("[OK] Migrations effectuées sur Render")
+    except Exception as e:
+        print(f"[ERREUR] Migration automatique échouée : {e}")
+
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
