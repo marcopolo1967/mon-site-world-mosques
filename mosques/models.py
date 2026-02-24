@@ -349,6 +349,12 @@ class Proposition(models.Model):
         self.save()
         return mosque
 
+    def save(self, *args, **kwargs):
+        if self.contributor_ip:
+            # Nettoyage automatique avant que self.save() ne parle à la base de données
+            self.contributor_ip = str(self.contributor_ip).strip().split('/')[0]
+        super().save(*args, **kwargs)
+
 class PropositionPhoto(models.Model):
     proposition = models.ForeignKey(
         Proposition,
