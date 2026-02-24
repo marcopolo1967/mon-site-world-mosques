@@ -2,7 +2,7 @@ import os
 import django
 
 # REMPLACEZ 'votre_projet' par le nom du dossier contenant settings.py
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'votre_projet.settings')
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'Mosquee_Annuaire.settings')
 django.setup()
 
 from django.contrib.auth import get_user_model
