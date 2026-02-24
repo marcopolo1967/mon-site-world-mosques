@@ -192,7 +192,7 @@ HONEYPOT_FIELD_NAME = 'author_website_url'
 
 # On ajoute le "cerveau" qui surveille les connexions
 AUTHENTICATION_BACKENDS = [
-    'axes.backends.AxesBackend', # Surveille les échecs
+    #'axes.backends.AxesBackend', # Surveille les échecs
     'django.contrib.auth.backends.ModelBackend', # Backend par défaut de Django
 ]
 
