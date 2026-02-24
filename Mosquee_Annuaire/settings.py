@@ -170,7 +170,7 @@ LOCALE_PATHS = [
 INSTALLED_APPS = [
     'modeltranslation',
     'mosques',
-    'axes',             # On ajoute l'outil de sécurité
+    #'axes',             # On ajoute l'outil de sécurité
     'csp',
     'honeypot', # On active l'application
     'admin_honeypot',
@@ -214,7 +214,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'axes.middleware.AxesMiddleware',
+    #'axes.middleware.AxesMiddleware',
 ]
 
 ROOT_URLCONF = 'Mosquee_Annuaire.urls'
