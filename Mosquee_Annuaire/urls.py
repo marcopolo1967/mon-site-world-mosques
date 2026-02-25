@@ -12,7 +12,7 @@ from mosques import views
 urlpatterns = [
     # Le "bureau de change" : indispensable pour changer de langue via le menu
     path('i18n/', include('django.conf.urls.i18n')),
-    path('export-secret-database/', views.export_data_secure, name='export_data'),
+    #path('export-secret-database/', views.export_data_secure, name='export_data'),
 ]
 
 # ================================================================
