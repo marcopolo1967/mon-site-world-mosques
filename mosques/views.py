@@ -1,12 +1,17 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from django.db.models import Q, Count
 from .models import Mosque, Country, Wilaya, Proposition, MosquePhoto
 from .forms import PropositionForm
 import cloudinary.uploader
 import json
 from django.utils.translation import get_language
+
+import os
+from django.core import management
+from django.contrib.auth.decorators import user_passes_test
+from io import StringIO
 
 # ==================== VUES PRINCIPALES ====================
 
@@ -437,3 +442,25 @@ def get_pending_propositions_count(request):
         'count': count,
         'names': names
     })
+
+
+# --- AVANT : Fin de ton fichier views.py ---
+
+# --- APRÈS : Ajoute ce bloc ---
+import os
+from django.core import management
+from django.http import HttpResponse
+from django.contrib.auth.decorators import user_passes_test
+from io import StringIO
+
+
+@user_passes_test(lambda u: u.is_superuser)
+def export_data_secure(request):
+    """Génère un export JSON des mosquées pour synchronisation locale"""
+    output = StringIO()
+    # On exporte l'app 'mosques' pour récupérer propositions et mosquées
+    management.call_command('dumpdata', 'mosques', indent=2, stdout=output)
+
+    response = HttpResponse(output.getvalue(), content_type="application/json")
+    response['Content-Disposition'] = 'attachment; filename="backup_mosquees.json"'
+    return response
