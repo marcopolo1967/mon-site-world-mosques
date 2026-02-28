@@ -55,3 +55,10 @@ desktop.ini
 *.egg-info/
 dist/
 build/
+
+# Ajoute ces lignes pour bloquer le dossier qui a fait planter Render
+Lib/
+include/
+bin/
+share/
+pyvenv.cfg
