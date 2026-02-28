@@ -4,6 +4,10 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _
 from django.utils import translation
 from django_countries.fields import CountryField
+from astral import LocationInfo
+from astral.sun import sun
+from datetime import datetime
+import datetime as dt # Pour éviter les conflits de noms
 
 
 class Country(models.Model):
@@ -195,75 +199,95 @@ class Mosque(models.Model):
         return self.is_verified and self.has_coordinates
 
     def save(self, *args, **kwargs):
-        from mosques.utils.translation import translate_text_to_3_langs
-
-        # --- 1. RÉCUPÉRATION DES VALEURS BRUTES ---
-        # On utilise __dict__.get pour lire la base de données sans la magie de Django
-        n_fr = (self.__dict__.get('name_fr', "") or "").strip()
-        n_ar = (self.__dict__.get('name_ar', "") or "").strip()
-        n_en = (self.__dict__.get('name_en', "") or "").strip()
-
-        # --- 2. DÉTECTION DU "FAUX" FRANÇAIS ---
-        # Si le formulaire est soumis en Anglais, Django copie souvent l'Anglais dans le champ FR.
-        # On vérifie si n_fr est juste une copie de n_ar ou n_en.
-        is_fr_fake = (n_fr == n_ar and n_ar != "") or (n_fr == n_en and n_en != "")
-
-        # --- 3. GESTION DES NOMS ---
-        # Sécurité : On bloque si vraiment rien n'est saisi
-        if not n_fr and not n_ar and not n_en:
-            from django.core.exceptions import ValidationError
-            raise ValidationError("Vous devez remplir au moins un nom (Français, Arabe ou Anglais).")
-
-        # On traduit si le FR est vide OU s'il contient une copie auto (fake)
-        # OU si l'un des deux autres (AR/EN) est vide.
-        if (not n_fr or is_fr_fake) or not n_ar or not n_en:
-            # On définit la source de traduction (la première langue disponible et non suspecte)
-            # Si le FR est suspect, on privilégie l'AR ou l'EN comme source.
-            source_name = n_ar or n_en or n_fr
-
-            if source_name:
-                t_names = translate_text_to_3_langs(source_name)
-
-                # On remplit le Français si il était vide ou fake
-                if not n_fr or is_fr_fake: self.name_fr = t_names['fr']
-                # On remplit les autres si ils sont vides
-                if not n_ar: self.name_ar = t_names['ar']
-                if not n_en: self.name_en = t_names['en']
-
-        # --- 4. GESTION DE L'HISTORIQUE ET DESCRIPTION ---
-        h_fr = (self.__dict__.get('history_fr', "") or "").strip()
-        d_fr = (self.__dict__.get('description_fr', "") or "").strip()
-
-        # Phrases par défaut
-        def_h_ar, def_h_en = "لا يوجد تاريخ متاح حاليا", "No history available at the moment"
-        def_d_ar, def_d_en = "لا يوجد وصف متاح حاليا", "No description available at the moment"
-
-        # Traitement Histoire : Traduction si FR est saisi
-        if h_fr:
-            # On traduit si AR ou EN sont vides ou ont encore la phrase par défaut
-            if (not self.history_ar or self.history_ar == def_h_ar) or \
-                    (not self.history_en or self.history_en == def_h_en):
-                t_hist = translate_text_to_3_langs(h_fr)
-                self.history_ar = t_hist['ar']
-                self.history_en = t_hist['en']
-        else:
-            # Sinon, on remet les phrases par défaut
-            self.history_ar = def_h_ar
-            self.history_en = def_h_en
-
-        # Traitement Description : Traduction si FR est saisi
-        if d_fr:
-            # On traduit si AR ou EN sont vides ou ont encore la phrase par défaut
-            if (not self.description_ar or self.description_ar == def_d_ar) or \
-                    (not self.description_en or self.description_en == def_d_en):
-                t_desc = translate_text_to_3_langs(d_fr)
-                self.description_ar = t_desc['ar']
-                self.description_en = t_desc['en']
-        else:
-            self.description_ar = def_d_ar
-            self.description_en = def_d_en
+        # On force le lien vers le pays "Algérie" si une Wilaya est présente
+        if self.wilaya and not self.country_link:
+            from mosques.models import Country
+            # On cherche l'objet pays correspondant
+            pays_algerie = Country.objects.filter(name_fr="Algérie").first()
+            if pays_algerie:
+                self.country_link = pays_algerie
 
         super().save(*args, **kwargs)
+
+        
+
+    def get_prayer_times(self):
+        import pytz
+        import datetime as dt
+        from astral import LocationInfo
+        from astral.sun import sun, dawn, dusk
+        from timezonefinder import TimezoneFinder
+
+        if not self.latitude or not self.longitude:
+            return None
+
+        try:
+            lat, lng = float(self.latitude), float(self.longitude)
+            tf = TimezoneFinder()
+            tz_name = tf.timezone_at(lng=lng, lat=lat) or 'Europe/Paris'
+            local_tz = pytz.timezone(tz_name)
+
+            city = LocationInfo(self.name, self.country, tz_name, lat, lng)
+            s = sun(city.observer, date=dt.date.today(), tzinfo=local_tz)
+
+            # REGLAGES DES ANGLES (Ajustement pour Paris/France)
+            # L'angle de 12° est le standard le plus utilisé en France (UOIF)
+            fajr_time = dawn(city.observer, date=dt.date.today(), depression=12.0, tzinfo=local_tz)
+            isha_time = dusk(city.observer, date=dt.date.today(), depression=12.0, tzinfo=local_tz)
+
+            # AJUSTEMENT DHUHR (+5 min de sécurité comme dans les mosquées)
+            dhuhr_time = s['noon'] + dt.timedelta(minutes=5)
+
+            # CALCUL ASR (Standard Shafi/Maliki/Hanbali)
+            maghrib_time = s['sunset']
+            # On utilise une approximation plus précise pour l'Asr
+            asr_time = dhuhr_time + (maghrib_time - dhuhr_time) * 0.58
+
+            return {
+                'Fajr': fajr_time.strftime("%H:%M"),
+                'Dhuhr': dhuhr_time.strftime("%H:%M"),
+                'Asr': asr_time.strftime("%H:%M"),
+                'Maghrib': maghrib_time.strftime("%H:%M"),
+                'Isha': isha_time.strftime("%H:%M"),
+            }
+        except Exception as e:
+            print(f"Erreur : {e}")
+            return None
+
+
+class PrayerSettings(models.Model):
+    """Réglages de calcul des horaires pour une mosquée spécifique"""
+
+    mosque = models.OneToOneField(
+        Mosque,
+        on_delete=models.CASCADE,
+        related_name='prayer_settings'
+    )
+
+    # La méthode de calcul (Ex: Egypt Survey, Umm Al-Qura, etc.)
+    # On va commencer par une valeur par défaut courante en Algérie
+    calculation_method = models.CharField(
+        max_length=50,
+        default='MWL',  # Muslim World League
+        verbose_name="Méthode de calcul"
+    )
+
+    # Les ajustements manuels (en minutes) si la mosquée décale l'adhan
+    fajr_offset = models.IntegerField(default=0, verbose_name="Ajustement Fajr (min)")
+    dhuhr_offset = models.IntegerField(default=0, verbose_name="Ajustement Dhuhr (min)")
+    asr_offset = models.IntegerField(default=0, verbose_name="Ajustement Asr (min)")
+    maghrib_offset = models.IntegerField(default=0, verbose_name="Ajustement Maghrib (min)")
+    isha_offset = models.IntegerField(default=0, verbose_name="Ajustement Isha (min)")
+
+    class Meta:
+        verbose_name = "Réglage prière"
+        verbose_name_plural = "Réglages prières"
+
+    def __str__(self):
+        return f"Réglages prières - {self.mosque.name}"
+
+
+
 
 #==========================================================
 #  STOCKAGE DES PROPOSTIONS DES VISITEURS

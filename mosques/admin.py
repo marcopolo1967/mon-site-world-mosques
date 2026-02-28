@@ -676,3 +676,11 @@ class PropositionAdmin(admin.ModelAdmin):
 
         # Si sauvegarde normale
         return super().response_change(request, obj)
+
+
+from .models import PrayerSettings
+
+@admin.register(PrayerSettings)
+class PrayerSettingsAdmin(admin.ModelAdmin):
+    list_display = ('mosque', 'calculation_method')
+    search_fields = ('mosque__name',)

@@ -121,56 +121,45 @@ def carte_interactive(request):
     # ========================================================================
 
     for mosque in mosques:
-        country_name = str(mosque.country)
-
-        # ========== RECHERCHE INSENSIBLE AUX ACCENTS ==========
-        # RECHERCHE EN 2 ÉTAPES :
-        country_code = None
-
-        # 1. D'abord chercher dans arabic_to_french (pour l'arabe)
-        arabic_to_french = {
-            'الجزائر': 'DZ',
-            'الـجزائر': 'DZ',
-            'مصر': 'EG',
-            'المغرب': 'MA',
-            'تونس': 'TN',
-            'السعودية': 'SA',
-            'تركيا': 'TR',
-            'فرنسا': 'FR'
-        }
-
-        if country_name in arabic_to_french:
-            country_code = arabic_to_french[country_name]
-
-            print(f"✅ Trouvé '{country_name}' dans arabic_to_french: {country_code}")
-
-
+        # --- 1. PRIORITÉ : LE NOUVEAU CHAMP PROPRE ---
+        if mosque.country_link:
+            country_code = mosque.country_link.code
+            country_name = mosque.country_link.name_fr
         else:
-            print(f"❌ '{country_name}' NON trouvé dans arabic_to_french")
-            print(f"   Clés disponibles: {list(arabic_to_french.keys())}")
+            # --- 2. ANCIEN SYSTÈME (COMPATIBILITÉ) ---
+            country_name = str(mosque.country)
+            country_code = None
 
-            # 2. Si pas en arabe, chercher dans correspondances (insensible aux accents)
-            normalized_input = remove_accents(country_name).lower()
+            # Ton dictionnaire Arabe d'origine
+            arabic_to_french = {
+                'الجزائر': 'DZ', 'الـجزائر': 'DZ', 'مصر': 'EG',
+                'المغرب': 'MA', 'تونس': 'TN', 'السعودية': 'SA',
+                'تركيا': 'TR', 'فرنsa': 'FR'
+            }
 
-            for key, value in correspondances.items():
-                if remove_accents(key).lower() == normalized_input:
-                    country_code = value
-                    break
+            if country_name in arabic_to_french:
+                country_code = arabic_to_french[country_name]
+            else:
+                # Ton système de normalisation d'accents
+                normalized_input = remove_accents(country_name).lower()
+                for key, value in correspondances.items():
+                    if remove_accents(key).lower() == normalized_input:
+                        country_code = value
+                        break
 
-            # 3. Si toujours pas trouvé, prendre les 2 premiers caractères
-            if not country_code:
-                # Deviner par le nom
-                country_lower = country_name.lower()
-                if 'alg' in country_lower or 'جزائر' in country_name:
-                    country_code = 'DZ'
-                elif 'maroc' in country_lower or 'مغرب' in country_name:
-                    country_code = 'MA'
-                elif 'tunis' in country_lower or 'تونس' in country_name:
-                    country_code = 'TN'
-                elif 'franc' in country_lower or 'فرنسا' in country_name:
-                    country_code = 'FR'
-                else:
-                    country_code = country_name[:2].upper()
+                # Ton système de "devinette" par texte
+                if not country_code:
+                    country_lower = country_name.lower()
+                    if 'alg' in country_lower or 'جزائر' in country_name:
+                        country_code = 'DZ'
+                    elif 'maroc' in country_lower or 'مغرب' in country_name:
+                        country_code = 'MA'
+                    elif 'tunis' in country_lower or 'تونس' in country_name:
+                        country_code = 'TN'
+                    elif 'franc' in country_lower or 'فرنسا' in country_name:
+                        country_code = 'FR'
+                    else:
+                        country_code = country_name[:2].upper()
 
         pays_codes.add(country_code)
 
