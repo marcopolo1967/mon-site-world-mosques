@@ -350,16 +350,20 @@
                                 <div class="col-md-6">
                                     <label class="fw-bold mb-2">{% trans "Latitude" %}</label>
                                     <input type="text" name="latitude" id="id_latitude" class="form-control"
-                                           placeholder="Ex: 36.752887 (utilisez un point, non pas une virgule)" required
-                                           pattern="-?\d{1,3}\.\d{1,8}" title="Format: 36.752887 - Utilisez un point .">
-                                    <small class="text-muted">Coordonnée Nord/Sud (utilisez un point .)</small>
+                                           placeholder="{% trans 'Ex: 36.752887 (utilisez un point, non pas une virgule)' %}"
+                                           required
+                                           pattern="-?\d{1,3}\.\d{1,8}"
+                                           title="{% trans 'Format: 36.752887 - Utilisez un point .' %}">
+                                    <small class="text-muted">{% trans "Coordonnée Nord/Sud (utilisez un point .)" %}</small>
                                 </div>
                                 <div class="col-md-6">
                                     <label class="fw-bold mb-2">{% trans "Longitude" %}</label>
                                     <input type="text" name="longitude" id="id_longitude" class="form-control"
-                                           placeholder="Ex: 3.042048 (utilisez un point, non pas une virgule)" required
-                                           pattern="-?\d{1,3}\.\d{1,8}" title="Format: 3.042048 - Utilisez un point .">
-                                    <small class="text-muted">Coordonnée Est/Ouest (utilisez un point .)</small>
+                                           placeholder="{% trans 'Ex: 3.042048 (utilisez un point, non pas une virgule)' %}"
+                                           required
+                                           pattern="-?\d{1,3}\.\d{1,8}"
+                                           title="{% trans 'Format: 3.042048 - Utilisez un point .' %}">
+                                    <small class="text-muted">{% trans "Coordonnée Est/Ouest (utilisez un point .)" %}</small>
                                 </div>
                             </div>
 

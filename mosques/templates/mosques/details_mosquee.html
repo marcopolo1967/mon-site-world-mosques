@@ -296,9 +296,33 @@
             <div class="row g-4">
                 <div class="col-lg-8">
                     <div class="card card-details p-4 p-md-5 bg-white">
-                        <span class="badge-wilaya mb-3 d-inline-block">{% trans "Wilaya de" %}
-                            {% if LANGUAGE_CODE == 'ar' %}{{ mosque.wilaya.name_ar }}{% else %}{{ mosque.wilaya.name_fr }}{% endif %}
-                        </span>
+                        <div class="badge-wilaya mb-3 d-flex justify-content-between align-items-center px-3"
+                             style="width: 100%; min-height: 40px;">
+                            <div class="text-start">
+                                {% if mosque.country_link.code == 'DZ' %}
+                                    {# CAS ALGÉRIE #}
+                                    {% trans "Wilaya de" %}
+                                    {% if LANGUAGE_CODE == 'ar' %}{{ mosque.wilaya.name_ar }}{% else %}
+                                        {{ mosque.wilaya.name_fr }}{% endif %}
+                                {% else %}
+                                    {# CAS MONDE (Canada, etc.) #}
+                                    {% if mosque.wilaya %}
+                                        {% if LANGUAGE_CODE == 'ar' %}{{ mosque.wilaya.name_ar }}{% else %}
+                                            {{ mosque.wilaya.name_fr }}{% endif %}
+                                    {% else %}
+                                        {{ mosque.city }}
+                                    {% endif %}
+                                {% endif %}
+                            </div>
+
+                            <div class="text-end fw-bold text-uppercase" style="font-size: 0.85rem; opacity: 0.9;">
+                                {% if LANGUAGE_CODE == 'ar' %}
+                                    {{ mosque.country_link.name_ar|default:mosque.country }}
+                                {% else %}
+                                    {{ mosque.country_link.name_fr|default:mosque.country }}
+                                {% endif %}
+                            </div>
+                        </div>
 
                         <h1 class="fw-bold mb-3" style="color: var(--dark-green);">{{ mosque.name }}</h1>
 

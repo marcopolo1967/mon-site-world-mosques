@@ -243,6 +243,20 @@ class Mosque(models.Model):
             # On utilise une approximation plus précise pour l'Asr
             asr_time = dhuhr_time + (maghrib_time - dhuhr_time) * 0.58
 
+            # On récupère les réglages de la mosquée s'ils existent
+            settings = getattr(self, 'prayer_settings', None)
+
+            def apply_offset(time_obj, offset_minutes):
+                if offset_minutes == 0: return time_obj
+                return time_obj + dt.timedelta(minutes=offset_minutes)
+
+            if settings:
+                fajr_time = apply_offset(fajr_time, settings.fajr_offset)
+                dhuhr_time = apply_offset(dhuhr_time, settings.dhuhr_offset)
+                asr_time = apply_offset(asr_time, settings.asr_offset)
+                maghrib_time = apply_offset(maghrib_time, settings.maghrib_offset)
+                isha_time = apply_offset(isha_time, settings.isha_offset)
+
             return {
                 'Fajr': fajr_time.strftime("%H:%M"),
                 'Dhuhr': dhuhr_time.strftime("%H:%M"),

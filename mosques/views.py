@@ -6,8 +6,8 @@ from .models import Mosque, Country, Wilaya, Proposition, MosquePhoto
 from .forms import PropositionForm
 import cloudinary.uploader
 import json
-from django.utils.translation import get_language
-
+from django.utils.translation import get_language, gettext as _
+from django.utils.html import format_html
 import os
 from django.core import management
 from django.contrib.auth.decorators import user_passes_test
@@ -63,11 +63,12 @@ def proposer_mosquee(request):
                         print(f"Erreur upload photo: {e}")
                         continue
 
-            messages.success(
-                request,
-                f'✅ <strong>Merci pour votre proposition !</strong><br>'
-                f'Votre proposition a été enregistrée avec {photo_count} photo(s) et sera examinée par notre équipe.'
-            )
+            # Assure-toi que c'est exactement ce texte (sans sauts de ligne à l'intérieur de la parenthèse)
+            msg = _(
+                "✅ Merci pour votre proposition ! Votre proposition a été enregistrée avec %s photo(s) et sera examinée par notre équipe.")
+
+            messages.success(request, msg % photo_count)
+
             return redirect('proposer')
     else:
         form = PropositionForm()

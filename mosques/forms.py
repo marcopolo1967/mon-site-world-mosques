@@ -1,5 +1,6 @@
 from django import forms
 from .models import Wilaya, Proposition, MosquePhoto, Mosque
+from django.utils.translation import gettext_lazy as _  # On utilise _lazy pour les formulaires
 
 
 class PropositionForm(forms.ModelForm):
@@ -25,6 +26,7 @@ class PropositionForm(forms.ModelForm):
             'description', 'history',
             'contributor_email'
         ]
+
         labels = {
             'name': 'Nom de la mosquée *',
             'wilaya': 'Wilaya *',
@@ -37,6 +39,7 @@ class PropositionForm(forms.ModelForm):
         }
         help_texts = {
             'contributor_email': 'Pour vous contacter si besoin. Ne sera pas publié.',
+
         }
         widgets = {
             'wilaya': forms.Select(attrs={'class': 'form-control'}),

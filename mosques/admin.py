@@ -1,6 +1,6 @@
 from django.contrib import admin, messages
 from modeltranslation.admin import TranslationAdmin
-from .models import Wilaya, Mosque, MosquePhoto, Proposition, MosqueWithPhotos, Country, Proposition, PropositionPhoto
+from .models import Wilaya, Mosque, MosquePhoto, Proposition, MosqueWithPhotos, Country, Proposition, PropositionPhoto, PrayerSettings
 from .forms import MosqueAdminForm
 from django.utils import timezone
 from django import forms
@@ -14,6 +14,14 @@ from googletrans import Translator
 from django.forms.widgets import ClearableFileInput
 from django.forms import FileInput
 from mosques.utils.translation import translate_text_to_3_langs
+
+
+class PrayerSettingsInline(admin.StackedInline):
+    model = PrayerSettings
+    can_delete = False
+    verbose_name = "Réglage de l'horloge (Ajustements manuels en minutes)"
+    # On met les 5 cases sur une seule ligne pour que ce soit compact
+    fields = (('fajr_offset', 'dhuhr_offset', 'asr_offset', 'maghrib_offset', 'isha_offset'),)
 
 
 class MosquePhotoInline(admin.TabularInline):
@@ -40,6 +48,8 @@ class MosquePhotoInline(admin.TabularInline):
 # ================================================
 @admin.register(Mosque)
 class MosqueAdmin(TranslationAdmin):
+
+    inlines = [PrayerSettingsInline]
 
 
     list_display = ('name', 'country_link', 'display_wilaya', 'city', 'photo_count_display', 'view_photos_link')
@@ -150,23 +160,39 @@ class MosqueAdmin(TranslationAdmin):
     )
 
     def save_model(self, request, obj, form, change):
-        super().save_model(request, obj, form, change)
-        files = request.FILES.getlist('bulk_photos')
+        # 1. RÉCUPÉRATION DE LA SOURCE (Ce que tu viens de taper)
+        # On regarde le champ que tu as rempli dans l'admin
+        source_text = obj.description_fr or obj.description_ar or obj.description_en
+        source_hist = obj.history_fr or obj.history_ar or obj.history_en
 
+        if source_text or source_hist:
+            from mosques.utils.translation import translate_text_to_3_langs
+
+            # Traduction de la Description
+            if source_text:
+                translations = translate_text_to_3_langs(source_text)
+                obj.description_fr = translations.get('fr', obj.description_fr)
+                obj.description_ar = translations.get('ar', obj.description_ar)
+                obj.description_en = translations.get('en', obj.description_en)
+
+            # Traduction de l'Histoire
+            if source_hist:
+                translations = translate_text_to_3_langs(source_hist)
+                obj.history_fr = translations.get('fr', obj.history_fr)
+                obj.history_ar = translations.get('ar', obj.history_ar)
+                obj.history_en = translations.get('en', obj.history_en)
+
+        # 2. SAUVEGARDE (C'est ici que tout s'écrit en base de données)
+        super().save_model(request, obj, form, change)
+
+        # 3. GESTION DES PHOTOS (Ton code reste identique)
+        files = request.FILES.getlist('bulk_photos')
         if files:
             from .models import MosquePhoto
-            photo_count = 0
             for f in files:
-                # 2. On ajoute 'is_approved=True' (ou le nom exact de votre champ de validation)
-                # Vérifiez dans votre modèle MosquePhoto si le champ s'appelle 'is_approved' ou 'is_verified'
-                MosquePhoto.objects.create(
-                    mosque=obj,
-                    image=f,
-                    is_approved=True
-                )
-                photo_count += 1
+                MosquePhoto.objects.create(mosque=obj, image=f, is_approved=True)
+            self.message_user(request, "✅ Photos ajoutées et traductions synchronisées.")
 
-            self.message_user(request, f"✅ {photo_count} photos ajoutées et approuvées automatiquement.")
 
     # LA MÉTHODE DOIT ÊTRE À L'INTÉRIEUR DE LA CLASSE
     def upload_photos_field(self, obj):

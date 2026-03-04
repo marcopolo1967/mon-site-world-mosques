@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-02-02 01:14+0100\n"
+"POT-Creation-Date: 2026-03-04 03:18+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -58,92 +58,92 @@ msgstr ""
 msgid "That page contains no results"
 msgstr ""
 
-#: .\Lib\site-packages\django\core\validators.py:22
+#: .\Lib\site-packages\django\core\validators.py:23
 msgid "Enter a valid value."
 msgstr ""
 
-#: .\Lib\site-packages\django\core\validators.py:70
+#: .\Lib\site-packages\django\core\validators.py:71
 msgid "Enter a valid domain name."
 msgstr ""
 
-#: .\Lib\site-packages\django\core\validators.py:153
-#: .\Lib\site-packages\django\forms\fields.py:775
+#: .\Lib\site-packages\django\core\validators.py:156
+#: .\Lib\site-packages\django\forms\fields.py:768
 msgid "Enter a valid URL."
 msgstr ""
 
-#: .\Lib\site-packages\django\core\validators.py:200
+#: .\Lib\site-packages\django\core\validators.py:217
 msgid "Enter a valid integer."
 msgstr ""
 
-#: .\Lib\site-packages\django\core\validators.py:211
+#: .\Lib\site-packages\django\core\validators.py:228
 msgid "Enter a valid email address."
 msgstr ""
 
 #. Translators: "letters" means latin letters: a-z and A-Z.
-#: .\Lib\site-packages\django\core\validators.py:289
+#: .\Lib\site-packages\django\core\validators.py:311
 msgid ""
 "Enter a valid “slug” consisting of letters, numbers, underscores or hyphens."
 msgstr ""
 
-#: .\Lib\site-packages\django\core\validators.py:297
+#: .\Lib\site-packages\django\core\validators.py:319
 msgid ""
 "Enter a valid “slug” consisting of Unicode letters, numbers, underscores, or "
 "hyphens."
 msgstr ""
 
-#: .\Lib\site-packages\django\core\validators.py:309
-#: .\Lib\site-packages\django\core\validators.py:318
-#: .\Lib\site-packages\django\core\validators.py:332
-#: .\Lib\site-packages\django\db\models\fields\__init__.py:2220
+#: .\Lib\site-packages\django\core\validators.py:331
+#: .\Lib\site-packages\django\core\validators.py:340
+#: .\Lib\site-packages\django\core\validators.py:354
+#: .\Lib\site-packages\django\db\models\fields\__init__.py:2215
 #, python-format
 msgid "Enter a valid %(protocol)s address."
 msgstr ""
 
-#: .\Lib\site-packages\django\core\validators.py:311
+#: .\Lib\site-packages\django\core\validators.py:333
 msgid "IPv4"
 msgstr ""
 
-#: .\Lib\site-packages\django\core\validators.py:320
+#: .\Lib\site-packages\django\core\validators.py:342
 #: .\Lib\site-packages\django\utils\ipv6.py:43
 msgid "IPv6"
 msgstr ""
 
-#: .\Lib\site-packages\django\core\validators.py:334
+#: .\Lib\site-packages\django\core\validators.py:356
 msgid "IPv4 or IPv6"
 msgstr ""
 
-#: .\Lib\site-packages\django\core\validators.py:375
+#: .\Lib\site-packages\django\core\validators.py:397
 msgid "Enter only digits separated by commas."
 msgstr ""
 
-#: .\Lib\site-packages\django\core\validators.py:381
+#: .\Lib\site-packages\django\core\validators.py:403
 #, python-format
 msgid "Ensure this value is %(limit_value)s (it is %(show_value)s)."
 msgstr ""
 
-#: .\Lib\site-packages\django\core\validators.py:416
+#: .\Lib\site-packages\django\core\validators.py:438
 #, python-format
 msgid "Ensure this value is less than or equal to %(limit_value)s."
 msgstr ""
 
-#: .\Lib\site-packages\django\core\validators.py:425
+#: .\Lib\site-packages\django\core\validators.py:447
 #, python-format
 msgid "Ensure this value is greater than or equal to %(limit_value)s."
 msgstr ""
 
-#: .\Lib\site-packages\django\core\validators.py:434
+#: .\Lib\site-packages\django\core\validators.py:456
 #, python-format
 msgid "Ensure this value is a multiple of step size %(limit_value)s."
 msgstr ""
 
-#: .\Lib\site-packages\django\core\validators.py:441
+#: .\Lib\site-packages\django\core\validators.py:463
 #, python-format
 msgid ""
 "Ensure this value is a multiple of step size %(limit_value)s, starting from "
 "%(offset)s, e.g. %(offset)s, %(valid_value1)s, %(valid_value2)s, and so on."
 msgstr ""
 
-#: .\Lib\site-packages\django\core\validators.py:473
+#: .\Lib\site-packages\django\core\validators.py:495
 #, python-format
 msgid ""
 "Ensure this value has at least %(limit_value)d character (it has "
@@ -154,7 +154,7 @@ msgid_plural ""
 msgstr[0] ""
 msgstr[1] ""
 
-#: .\Lib\site-packages\django\core\validators.py:491
+#: .\Lib\site-packages\django\core\validators.py:513
 #, python-format
 msgid ""
 "Ensure this value has at most %(limit_value)d character (it has "
@@ -165,27 +165,27 @@ msgid_plural ""
 msgstr[0] ""
 msgstr[1] ""
 
-#: .\Lib\site-packages\django\core\validators.py:514
-#: .\Lib\site-packages\django\forms\fields.py:366
-#: .\Lib\site-packages\django\forms\fields.py:405
+#: .\Lib\site-packages\django\core\validators.py:536
+#: .\Lib\site-packages\django\forms\fields.py:359
+#: .\Lib\site-packages\django\forms\fields.py:398
 msgid "Enter a number."
 msgstr ""
 
-#: .\Lib\site-packages\django\core\validators.py:516
+#: .\Lib\site-packages\django\core\validators.py:538
 #, python-format
 msgid "Ensure that there are no more than %(max)s digit in total."
 msgid_plural "Ensure that there are no more than %(max)s digits in total."
 msgstr[0] ""
 msgstr[1] ""
 
-#: .\Lib\site-packages\django\core\validators.py:521
+#: .\Lib\site-packages\django\core\validators.py:543
 #, python-format
 msgid "Ensure that there are no more than %(max)s decimal place."
 msgid_plural "Ensure that there are no more than %(max)s decimal places."
 msgstr[0] ""
 msgstr[1] ""
 
-#: .\Lib\site-packages\django\core\validators.py:526
+#: .\Lib\site-packages\django\core\validators.py:548
 #, python-format
 msgid ""
 "Ensure that there are no more than %(max)s digit before the decimal point."
@@ -194,23 +194,23 @@ msgid_plural ""
 msgstr[0] ""
 msgstr[1] ""
 
-#: .\Lib\site-packages\django\core\validators.py:597
+#: .\Lib\site-packages\django\core\validators.py:619
 #, python-format
 msgid ""
 "File extension “%(extension)s” is not allowed. Allowed extensions are: "
 "%(allowed_extensions)s."
 msgstr ""
 
-#: .\Lib\site-packages\django\core\validators.py:659
+#: .\Lib\site-packages\django\core\validators.py:681
 msgid "Null characters are not allowed."
 msgstr ""
 
-#: .\Lib\site-packages\django\db\models\base.py:1600
+#: .\Lib\site-packages\django\db\models\base.py:1572
 #: .\Lib\site-packages\django\forms\models.py:908
 msgid "and"
 msgstr ""
 
-#: .\Lib\site-packages\django\db\models\base.py:1602
+#: .\Lib\site-packages\django\db\models\base.py:1574
 #, python-format
 msgid "%(model_name)s with this %(field_labels)s already exists."
 msgstr ""
@@ -251,195 +251,195 @@ msgstr ""
 msgid "Field of type: %(field_type)s"
 msgstr ""
 
-#: .\Lib\site-packages\django\db\models\fields\__init__.py:1162
+#: .\Lib\site-packages\django\db\models\fields\__init__.py:1156
 #, python-format
 msgid "“%(value)s” value must be either True or False."
 msgstr ""
 
-#: .\Lib\site-packages\django\db\models\fields\__init__.py:1163
+#: .\Lib\site-packages\django\db\models\fields\__init__.py:1157
 #, python-format
 msgid "“%(value)s” value must be either True, False, or None."
 msgstr ""
 
-#: .\Lib\site-packages\django\db\models\fields\__init__.py:1165
+#: .\Lib\site-packages\django\db\models\fields\__init__.py:1159
 msgid "Boolean (Either True or False)"
 msgstr ""
 
-#: .\Lib\site-packages\django\db\models\fields\__init__.py:1215
+#: .\Lib\site-packages\django\db\models\fields\__init__.py:1209
 #, python-format
 msgid "String (up to %(max_length)s)"
 msgstr ""
 
-#: .\Lib\site-packages\django\db\models\fields\__init__.py:1217
+#: .\Lib\site-packages\django\db\models\fields\__init__.py:1211
 msgid "String (unlimited)"
 msgstr ""
 
-#: .\Lib\site-packages\django\db\models\fields\__init__.py:1326
+#: .\Lib\site-packages\django\db\models\fields\__init__.py:1320
 msgid "Comma-separated integers"
 msgstr ""
 
-#: .\Lib\site-packages\django\db\models\fields\__init__.py:1427
+#: .\Lib\site-packages\django\db\models\fields\__init__.py:1421
 #, python-format
 msgid ""
 "“%(value)s” value has an invalid date format. It must be in YYYY-MM-DD "
 "format."
 msgstr ""
 
-#: .\Lib\site-packages\django\db\models\fields\__init__.py:1431
-#: .\Lib\site-packages\django\db\models\fields\__init__.py:1566
+#: .\Lib\site-packages\django\db\models\fields\__init__.py:1425
+#: .\Lib\site-packages\django\db\models\fields\__init__.py:1560
 #, python-format
 msgid ""
 "“%(value)s” value has the correct format (YYYY-MM-DD) but it is an invalid "
 "date."
 msgstr ""
 
-#: .\Lib\site-packages\django\db\models\fields\__init__.py:1435
+#: .\Lib\site-packages\django\db\models\fields\__init__.py:1429
 msgid "Date (without time)"
 msgstr ""
 
-#: .\Lib\site-packages\django\db\models\fields\__init__.py:1562
+#: .\Lib\site-packages\django\db\models\fields\__init__.py:1556
 #, python-format
 msgid ""
 "“%(value)s” value has an invalid format. It must be in YYYY-MM-DD "
 "HH:MM[:ss[.uuuuuu]][TZ] format."
 msgstr ""
 
-#: .\Lib\site-packages\django\db\models\fields\__init__.py:1570
+#: .\Lib\site-packages\django\db\models\fields\__init__.py:1564
 #, python-format
 msgid ""
 "“%(value)s” value has the correct format (YYYY-MM-DD HH:MM[:ss[.uuuuuu]]"
 "[TZ]) but it is an invalid date/time."
 msgstr ""
 
-#: .\Lib\site-packages\django\db\models\fields\__init__.py:1575
+#: .\Lib\site-packages\django\db\models\fields\__init__.py:1569
 msgid "Date (with time)"
 msgstr ""
 
-#: .\Lib\site-packages\django\db\models\fields\__init__.py:1702
+#: .\Lib\site-packages\django\db\models\fields\__init__.py:1696
 #, python-format
 msgid "“%(value)s” value must be a decimal number."
 msgstr ""
 
-#: .\Lib\site-packages\django\db\models\fields\__init__.py:1704
+#: .\Lib\site-packages\django\db\models\fields\__init__.py:1698
 msgid "Decimal number"
 msgstr ""
 
-#: .\Lib\site-packages\django\db\models\fields\__init__.py:1864
+#: .\Lib\site-packages\django\db\models\fields\__init__.py:1859
 #, python-format
 msgid ""
 "“%(value)s” value has an invalid format. It must be in [DD] "
 "[[HH:]MM:]ss[.uuuuuu] format."
 msgstr ""
 
-#: .\Lib\site-packages\django\db\models\fields\__init__.py:1868
+#: .\Lib\site-packages\django\db\models\fields\__init__.py:1863
 msgid "Duration"
 msgstr ""
 
-#: .\Lib\site-packages\django\db\models\fields\__init__.py:1920
+#: .\Lib\site-packages\django\db\models\fields\__init__.py:1915
 msgid "Email address"
 msgstr ""
 
-#: .\Lib\site-packages\django\db\models\fields\__init__.py:1945
+#: .\Lib\site-packages\django\db\models\fields\__init__.py:1940
 msgid "File path"
 msgstr ""
 
-#: .\Lib\site-packages\django\db\models\fields\__init__.py:2023
+#: .\Lib\site-packages\django\db\models\fields\__init__.py:2018
 #, python-format
 msgid "“%(value)s” value must be a float."
 msgstr ""
 
-#: .\Lib\site-packages\django\db\models\fields\__init__.py:2025
+#: .\Lib\site-packages\django\db\models\fields\__init__.py:2020
 msgid "Floating point number"
 msgstr ""
 
-#: .\Lib\site-packages\django\db\models\fields\__init__.py:2065
+#: .\Lib\site-packages\django\db\models\fields\__init__.py:2060
 #, python-format
 msgid "“%(value)s” value must be an integer."
 msgstr ""
 
-#: .\Lib\site-packages\django\db\models\fields\__init__.py:2067
+#: .\Lib\site-packages\django\db\models\fields\__init__.py:2062
 msgid "Integer"
 msgstr ""
 
-#: .\Lib\site-packages\django\db\models\fields\__init__.py:2163
+#: .\Lib\site-packages\django\db\models\fields\__init__.py:2158
 msgid "Big (8 byte) integer"
 msgstr ""
 
-#: .\Lib\site-packages\django\db\models\fields\__init__.py:2180
+#: .\Lib\site-packages\django\db\models\fields\__init__.py:2175
 msgid "Small integer"
 msgstr ""
 
-#: .\Lib\site-packages\django\db\models\fields\__init__.py:2188
+#: .\Lib\site-packages\django\db\models\fields\__init__.py:2183
 msgid "IPv4 address"
 msgstr ""
 
-#: .\Lib\site-packages\django\db\models\fields\__init__.py:2219
+#: .\Lib\site-packages\django\db\models\fields\__init__.py:2214
 msgid "IP address"
 msgstr ""
 
-#: .\Lib\site-packages\django\db\models\fields\__init__.py:2310
-#: .\Lib\site-packages\django\db\models\fields\__init__.py:2311
+#: .\Lib\site-packages\django\db\models\fields\__init__.py:2305
+#: .\Lib\site-packages\django\db\models\fields\__init__.py:2306
 #, python-format
 msgid "“%(value)s” value must be either None, True or False."
 msgstr ""
 
-#: .\Lib\site-packages\django\db\models\fields\__init__.py:2313
+#: .\Lib\site-packages\django\db\models\fields\__init__.py:2308
 msgid "Boolean (Either True, False or None)"
 msgstr ""
 
-#: .\Lib\site-packages\django\db\models\fields\__init__.py:2364
+#: .\Lib\site-packages\django\db\models\fields\__init__.py:2359
 msgid "Positive big integer"
 msgstr ""
 
-#: .\Lib\site-packages\django\db\models\fields\__init__.py:2379
+#: .\Lib\site-packages\django\db\models\fields\__init__.py:2374
 msgid "Positive integer"
 msgstr ""
 
-#: .\Lib\site-packages\django\db\models\fields\__init__.py:2394
+#: .\Lib\site-packages\django\db\models\fields\__init__.py:2389
 msgid "Positive small integer"
 msgstr ""
 
-#: .\Lib\site-packages\django\db\models\fields\__init__.py:2410
+#: .\Lib\site-packages\django\db\models\fields\__init__.py:2405
 #, python-format
 msgid "Slug (up to %(max_length)s)"
 msgstr ""
 
-#: .\Lib\site-packages\django\db\models\fields\__init__.py:2446
+#: .\Lib\site-packages\django\db\models\fields\__init__.py:2441
 msgid "Text"
 msgstr ""
 
-#: .\Lib\site-packages\django\db\models\fields\__init__.py:2526
+#: .\Lib\site-packages\django\db\models\fields\__init__.py:2521
 #, python-format
 msgid ""
 "“%(value)s” value has an invalid format. It must be in HH:MM[:ss[.uuuuuu]] "
 "format."
 msgstr ""
 
-#: .\Lib\site-packages\django\db\models\fields\__init__.py:2530
+#: .\Lib\site-packages\django\db\models\fields\__init__.py:2525
 #, python-format
 msgid ""
 "“%(value)s” value has the correct format (HH:MM[:ss[.uuuuuu]]) but it is an "
 "invalid time."
 msgstr ""
 
-#: .\Lib\site-packages\django\db\models\fields\__init__.py:2534
+#: .\Lib\site-packages\django\db\models\fields\__init__.py:2529
 msgid "Time"
 msgstr ""
 
-#: .\Lib\site-packages\django\db\models\fields\__init__.py:2642
+#: .\Lib\site-packages\django\db\models\fields\__init__.py:2637
 msgid "URL"
 msgstr ""
 
-#: .\Lib\site-packages\django\db\models\fields\__init__.py:2666
+#: .\Lib\site-packages\django\db\models\fields\__init__.py:2661
 msgid "Raw binary data"
 msgstr ""
 
-#: .\Lib\site-packages\django\db\models\fields\__init__.py:2731
+#: .\Lib\site-packages\django\db\models\fields\__init__.py:2726
 #, python-format
 msgid "“%(value)s” is not a valid UUID."
 msgstr ""
 
-#: .\Lib\site-packages\django\db\models\fields\__init__.py:2733
+#: .\Lib\site-packages\django\db\models\fields\__init__.py:2728
 msgid "Universally unique identifier"
 msgstr ""
 
@@ -459,30 +459,30 @@ msgstr ""
 msgid "Value must be valid JSON."
 msgstr ""
 
-#: .\Lib\site-packages\django\db\models\fields\related.py:979
+#: .\Lib\site-packages\django\db\models\fields\related.py:932
 #, python-format
-msgid "%(model)s instance with %(field)s %(value)r is not a valid choice."
+msgid "%(model)s instance with %(field)s %(value)r does not exist."
 msgstr ""
 
-#: .\Lib\site-packages\django\db\models\fields\related.py:982
+#: .\Lib\site-packages\django\db\models\fields\related.py:934
 msgid "Foreign Key (type determined by related field)"
 msgstr ""
 
-#: .\Lib\site-packages\django\db\models\fields\related.py:1276
+#: .\Lib\site-packages\django\db\models\fields\related.py:1228
 msgid "One-to-one relationship"
 msgstr ""
 
-#: .\Lib\site-packages\django\db\models\fields\related.py:1333
+#: .\Lib\site-packages\django\db\models\fields\related.py:1285
 #, python-format
 msgid "%(from)s-%(to)s relationship"
 msgstr ""
 
-#: .\Lib\site-packages\django\db\models\fields\related.py:1335
+#: .\Lib\site-packages\django\db\models\fields\related.py:1287
 #, python-format
 msgid "%(from)s-%(to)s relationships"
 msgstr ""
 
-#: .\Lib\site-packages\django\db\models\fields\related.py:1383
+#: .\Lib\site-packages\django\db\models\fields\related.py:1335
 msgid "Many-to-many relationship"
 msgstr ""
 
@@ -496,46 +496,46 @@ msgstr ""
 msgid "This field is required."
 msgstr ""
 
-#: .\Lib\site-packages\django\forms\fields.py:315
+#: .\Lib\site-packages\django\forms\fields.py:308
 msgid "Enter a whole number."
 msgstr ""
 
-#: .\Lib\site-packages\django\forms\fields.py:486
-#: .\Lib\site-packages\django\forms\fields.py:1267
+#: .\Lib\site-packages\django\forms\fields.py:479
+#: .\Lib\site-packages\django\forms\fields.py:1260
 msgid "Enter a valid date."
 msgstr ""
 
-#: .\Lib\site-packages\django\forms\fields.py:509
-#: .\Lib\site-packages\django\forms\fields.py:1268
+#: .\Lib\site-packages\django\forms\fields.py:502
+#: .\Lib\site-packages\django\forms\fields.py:1261
 msgid "Enter a valid time."
 msgstr ""
 
-#: .\Lib\site-packages\django\forms\fields.py:536
+#: .\Lib\site-packages\django\forms\fields.py:529
 msgid "Enter a valid date/time."
 msgstr ""
 
-#: .\Lib\site-packages\django\forms\fields.py:570
+#: .\Lib\site-packages\django\forms\fields.py:563
 msgid "Enter a valid duration."
 msgstr ""
 
-#: .\Lib\site-packages\django\forms\fields.py:571
+#: .\Lib\site-packages\django\forms\fields.py:564
 #, python-brace-format
 msgid "The number of days must be between {min_days} and {max_days}."
 msgstr ""
 
-#: .\Lib\site-packages\django\forms\fields.py:640
+#: .\Lib\site-packages\django\forms\fields.py:633
 msgid "No file was submitted. Check the encoding type on the form."
 msgstr ""
 
-#: .\Lib\site-packages\django\forms\fields.py:641
+#: .\Lib\site-packages\django\forms\fields.py:634
 msgid "No file was submitted."
 msgstr ""
 
-#: .\Lib\site-packages\django\forms\fields.py:642
+#: .\Lib\site-packages\django\forms\fields.py:635
 msgid "The submitted file is empty."
 msgstr ""
 
-#: .\Lib\site-packages\django\forms\fields.py:644
+#: .\Lib\site-packages\django\forms\fields.py:637
 #, python-format
 msgid "Ensure this filename has at most %(max)d character (it has %(length)d)."
 msgid_plural ""
@@ -543,47 +543,47 @@ msgid_plural ""
 msgstr[0] ""
 msgstr[1] ""
 
-#: .\Lib\site-packages\django\forms\fields.py:649
+#: .\Lib\site-packages\django\forms\fields.py:642
 msgid "Please either submit a file or check the clear checkbox, not both."
 msgstr ""
 
-#: .\Lib\site-packages\django\forms\fields.py:717
+#: .\Lib\site-packages\django\forms\fields.py:710
 msgid ""
 "Upload a valid image. The file you uploaded was either not an image or a "
 "corrupted image."
 msgstr ""
 
-#: .\Lib\site-packages\django\forms\fields.py:889
-#: .\Lib\site-packages\django\forms\fields.py:975
+#: .\Lib\site-packages\django\forms\fields.py:882
+#: .\Lib\site-packages\django\forms\fields.py:968
 #: .\Lib\site-packages\django\forms\models.py:1592
 #, python-format
 msgid "Select a valid choice. %(value)s is not one of the available choices."
 msgstr ""
 
-#: .\Lib\site-packages\django\forms\fields.py:977
-#: .\Lib\site-packages\django\forms\fields.py:1096
+#: .\Lib\site-packages\django\forms\fields.py:970
+#: .\Lib\site-packages\django\forms\fields.py:1089
 #: .\Lib\site-packages\django\forms\models.py:1590
 msgid "Enter a list of values."
 msgstr ""
 
-#: .\Lib\site-packages\django\forms\fields.py:1097
+#: .\Lib\site-packages\django\forms\fields.py:1090
 msgid "Enter a complete value."
 msgstr ""
 
-#: .\Lib\site-packages\django\forms\fields.py:1339
+#: .\Lib\site-packages\django\forms\fields.py:1332
 msgid "Enter a valid UUID."
 msgstr ""
 
-#: .\Lib\site-packages\django\forms\fields.py:1369
+#: .\Lib\site-packages\django\forms\fields.py:1362
 msgid "Enter a valid JSON."
 msgstr ""
 
 #. Translators: This is the default suffix added to form field labels
-#: .\Lib\site-packages\django\forms\forms.py:97
+#: .\Lib\site-packages\django\forms\forms.py:94
 msgid ":"
 msgstr ""
 
-#: .\Lib\site-packages\django\forms\forms.py:239
+#: .\Lib\site-packages\django\forms\forms.py:230
 #, python-format
 msgid "(Hidden field %(name)s) %(error)s"
 msgstr ""
@@ -652,34 +652,34 @@ msgstr ""
 msgid "“%(pk)s” is not a valid value."
 msgstr ""
 
-#: .\Lib\site-packages\django\forms\utils.py:229
+#: .\Lib\site-packages\django\forms\utils.py:227
 #, python-format
 msgid ""
 "%(datetime)s couldn’t be interpreted in time zone %(current_timezone)s; it "
 "may be ambiguous or it may not exist."
 msgstr ""
 
-#: .\Lib\site-packages\django\forms\widgets.py:527
+#: .\Lib\site-packages\django\forms\widgets.py:461
 msgid "Clear"
 msgstr ""
 
-#: .\Lib\site-packages\django\forms\widgets.py:528
+#: .\Lib\site-packages\django\forms\widgets.py:462
 msgid "Currently"
 msgstr ""
 
-#: .\Lib\site-packages\django\forms\widgets.py:529
+#: .\Lib\site-packages\django\forms\widgets.py:463
 msgid "Change"
 msgstr ""
 
-#: .\Lib\site-packages\django\forms\widgets.py:866
+#: .\Lib\site-packages\django\forms\widgets.py:800
 msgid "Unknown"
 msgstr ""
 
-#: .\Lib\site-packages\django\forms\widgets.py:867
+#: .\Lib\site-packages\django\forms\widgets.py:801
 msgid "Yes"
 msgstr ""
 
-#: .\Lib\site-packages\django\forms\widgets.py:868
+#: .\Lib\site-packages\django\forms\widgets.py:802
 msgid "No"
 msgstr ""
 
@@ -1150,20 +1150,20 @@ msgstr ""
 msgid "No week specified"
 msgstr ""
 
-#: .\Lib\site-packages\django\views\generic\dates.py:353
-#: .\Lib\site-packages\django\views\generic\dates.py:384
+#: .\Lib\site-packages\django\views\generic\dates.py:349
+#: .\Lib\site-packages\django\views\generic\dates.py:380
 #, python-format
 msgid "No %(verbose_name_plural)s available"
 msgstr ""
 
-#: .\Lib\site-packages\django\views\generic\dates.py:680
+#: .\Lib\site-packages\django\views\generic\dates.py:652
 #, python-format
 msgid ""
 "Future %(verbose_name_plural)s not available because "
 "%(class_name)s.allow_future is False."
 msgstr ""
 
-#: .\Lib\site-packages\django\views\generic\dates.py:720
+#: .\Lib\site-packages\django\views\generic\dates.py:692
 #, python-format
 msgid "Invalid date string “%(datestr)s” given format “%(format)s”"
 msgstr ""
@@ -1182,7 +1182,7 @@ msgstr ""
 msgid "Invalid page (%(page_number)s): %(message)s"
 msgstr ""
 
-#: .\Lib\site-packages\django\views\generic\list.py:173
+#: .\Lib\site-packages\django\views\generic\list.py:169
 #, python-format
 msgid "Empty list and “%(class_name)s.allow_empty” is False."
 msgstr ""
@@ -1248,6 +1248,10 @@ msgstr ""
 msgid "Connect, get help, or contribute"
 msgstr ""
 
+#: .\Lib\site-packages\ipware\apps.py:10
+msgid "ipware app"
+msgstr ""
+
 #: .\Lib\site-packages\modeltranslation\tests\models.py:14
 #: .\Lib\site-packages\modeltranslation\tests\models.py:54
 #: .\Lib\site-packages\modeltranslation\tests\models.py:62
@@ -1303,27 +1307,14 @@ msgstr ""
 msgid "None"
 msgstr ""
 
-#: .\Mosquee_Annuaire\settings.py:199
-msgid "Français"
-msgstr ""
-
-#: .\Mosquee_Annuaire\settings.py:200
-msgid "العربية"
-msgstr ""
-
-#: .\Mosquee_Annuaire\settings.py:201
-msgid "English"
-msgstr ""
-
-#: .\mosques\models.py:61 .\mosques\templates\mosques\carte.html:217
-#: .\mosques\templates\mosques\carte.html:232
-#: .\mosques\templates\mosques\pays_detail.html:173
-#: .\mosques\templates\mosques\pays_detail.html:222
-#: .\mosques\templates\mosques\proposer.html:333
+#: .\mosques\models.py:65 .\mosques\templates\mosques\carte.html:217
+#: .\mosques\templates\mosques\pays_detail.html:176
+#: .\mosques\templates\mosques\pays_detail.html:225
+#: .\mosques\templates\mosques\proposer.html:336
 msgid "Wilaya"
 msgstr "الولاية"
 
-#: .\mosques\models.py:62
+#: .\mosques\models.py:66
 msgid "Wilayas"
 msgstr "الولايات"
 
@@ -1332,36 +1323,36 @@ msgid "Carte Interactive"
 msgstr "خريطة تفاعلية"
 
 #: .\mosques\templates\mosques\carte.html:121
-#: .\mosques\templates\mosques\details_mosquee.html:108
+#: .\mosques\templates\mosques\details_mosquee.html:224
 #: .\mosques\templates\mosques\home.html:150
-#: .\mosques\templates\mosques\home.html:343
-#: .\mosques\templates\mosques\proposer.html:194
+#: .\mosques\templates\mosques\home.html:344
+#: .\mosques\templates\mosques\proposer.html:195
 #: .\mosques\templates\mosques\wilayas.html:147
 msgid "Accueil"
 msgstr "الصفحة الرئيسية"
 
 #: .\mosques\templates\mosques\carte.html:122
-#: .\mosques\templates\mosques\details_mosquee.html:109
+#: .\mosques\templates\mosques\details_mosquee.html:225
 #: .\mosques\templates\mosques\home.html:153
-#: .\mosques\templates\mosques\home.html:344
+#: .\mosques\templates\mosques\home.html:345
 #: .\mosques\templates\mosques\wilayas.html:149
 msgid "Proposition"
 msgstr "إقتراح"
 
 #: .\mosques\templates\mosques\carte.html:123
-#: .\mosques\templates\mosques\details_mosquee.html:111
+#: .\mosques\templates\mosques\details_mosquee.html:227
 #: .\mosques\templates\mosques\home.html:155
-#: .\mosques\templates\mosques\proposer.html:198
+#: .\mosques\templates\mosques\proposer.html:199
 #: .\mosques\templates\mosques\wilayas.html:11
-#: .\mosques\templates\mosques\wilayas.html:217
+#: .\mosques\templates\mosques\wilayas.html:219
 msgid "Panorama"
 msgstr "بانوراما"
 
 #: .\mosques\templates\mosques\carte.html:127
-#: .\mosques\templates\mosques\details_mosquee.html:115
+#: .\mosques\templates\mosques\details_mosquee.html:232
 #: .\mosques\templates\mosques\home.html:160
-#: .\mosques\templates\mosques\proposer.html:203
-#: .\mosques\templates\mosques\wilayas.html:154
+#: .\mosques\templates\mosques\proposer.html:204
+#: .\mosques\templates\mosques\wilayas.html:155
 msgid "Administrateur"
 msgstr "المسؤول"
 
@@ -1374,7 +1365,7 @@ msgid "Mosquées indexées"
 msgstr "فهرسة المساجد"
 
 #: .\mosques\templates\mosques\carte.html:206
-#: .\mosques\templates\mosques\proposer.html:308
+#: .\mosques\templates\mosques\proposer.html:310
 msgid "Pays"
 msgstr "البلد"
 
@@ -1386,101 +1377,93 @@ msgstr "ابحث عن دولة (مثلاً، الجزائر...)"
 msgid "Toutes les Wilayas"
 msgstr "جميع الولايات"
 
-#: .\mosques\templates\mosques\carte.html:235
-msgid "Toutes les wilayas"
-msgstr "جميع الولايات"
-
-#: .\mosques\templates\mosques\carte.html:249
-#: .\mosques\templates\mosques\home.html:341
+#: .\mosques\templates\mosques\carte.html:231
+#: .\mosques\templates\mosques\home.html:342
 msgid "Navigation"
 msgstr "التصفح"
 
-#: .\mosques\templates\mosques\carte.html:251
+#: .\mosques\templates\mosques\carte.html:233
 msgid "Monde"
 msgstr "العالم"
 
-#: .\mosques\templates\mosques\carte.html:252
+#: .\mosques\templates\mosques\carte.html:234
 msgid "Ma position"
 msgstr "موقعي"
 
-#: .\mosques\templates\mosques\carte.html:339
+#: .\mosques\templates\mosques\carte.html:321
 msgid "Voir l'affiche détaillée"
 msgstr "اطلع على التفاصيل الكاملة"
 
-#: .\mosques\templates\mosques\details_mosquee.html:110
+#: .\mosques\templates\mosques\details_mosquee.html:226
 #: .\mosques\templates\mosques\home.html:154
-#: .\mosques\templates\mosques\home.html:345
-#: .\mosques\templates\mosques\proposer.html:197
+#: .\mosques\templates\mosques\home.html:346
+#: .\mosques\templates\mosques\proposer.html:198
 #: .\mosques\templates\mosques\wilayas.html:148
 msgid "Carte"
 msgstr "الخريطة"
 
-#: .\mosques\templates\mosques\details_mosquee.html:179
+#: .\mosques\templates\mosques\details_mosquee.html:304
 msgid "Wilaya de"
 msgstr "ولاية"
 
-#: .\mosques\templates\mosques\details_mosquee.html:188
+#: .\mosques\templates\mosques\details_mosquee.html:332
 msgid "Commune"
 msgstr "بلدية"
 
-#: .\mosques\templates\mosques\details_mosquee.html:189
+#: .\mosques\templates\mosques\details_mosquee.html:333
 msgid "Ville"
 msgstr "مدينة"
 
-#: .\mosques\templates\mosques\details_mosquee.html:196
+#: .\mosques\templates\mosques\details_mosquee.html:340
 msgid "Description"
 msgstr "الوصف"
 
-#: .\mosques\templates\mosques\details_mosquee.html:198
+#: .\mosques\templates\mosques\details_mosquee.html:342
 msgid "Aucune description disponible."
 msgstr "لا يوجد وصف متاح"
 
-#: .\mosques\templates\mosques\details_mosquee.html:201
+#: .\mosques\templates\mosques\details_mosquee.html:345
 msgid "Histoire & Particularités"
 msgstr "التاريخ والخصائص"
 
-#: .\mosques\templates\mosques\details_mosquee.html:203
+#: .\mosques\templates\mosques\details_mosquee.html:347
 msgid "L'histoire de cette mosquée n'est pas encore renseignée."
 msgstr "لم يتم توثيق تاريخ هذا المسجد بعد."
 
-#: .\mosques\templates\mosques\details_mosquee.html:212
+#: .\mosques\templates\mosques\details_mosquee.html:356
 msgid "Galerie Photos"
 msgstr "ًمعرض الصور"
 
-#: .\mosques\templates\mosques\details_mosquee.html:225
-msgid "Photo"
-msgstr "صورة"
-
-#: .\mosques\templates\mosques\details_mosquee.html:234
+#: .\mosques\templates\mosques\details_mosquee.html:397
 msgid "Cliquez sur une photo pour l'agrandir"
 msgstr " اضغط على الصورة لتكبيرها."
 
-#: .\mosques\templates\mosques\details_mosquee.html:239
+#: .\mosques\templates\mosques\details_mosquee.html:402
 msgid "Aucune photo disponible"
 msgstr "لا توجد صورة متاحة"
 
-#: .\mosques\templates\mosques\details_mosquee.html:245
+#: .\mosques\templates\mosques\details_mosquee.html:408
 msgid "Horaires de prière"
 msgstr "أوقات الصلاة"
 
-#: .\mosques\templates\mosques\details_mosquee.html:247
+#: .\mosques\templates\mosques\details_mosquee.html:413
 msgid "Calculés pour"
 msgstr "محسوب لـ"
 
-#: .\mosques\templates\mosques\details_mosquee.html:249
-msgid "Chargement..."
-msgstr "تحميل..."
+#: .\mosques\templates\mosques\details_mosquee.html:424
+msgid "Coordonnées GPS manquantes ou erreur de calcul"
+msgstr "إحداثيات نظام تحديد المواقع العالمي (GPS) مفقودة أو خطأ في الحساب"
 
 #: .\mosques\templates\mosques\home.html:9
-#: .\mosques\templates\mosques\home.html:359
+#: .\mosques\templates\mosques\home.html:360
 msgid "Annuaire des Mosquées d'Algérie"
 msgstr "دليل المساجد في الجزائر"
 
-#: .\mosques\templates\mosques\home.html:247
+#: .\mosques\templates\mosques\home.html:248
 msgid "Annuaire Mondial des Mosquées"
 msgstr "الدليل العالمي للمساجد"
 
-#: .\mosques\templates\mosques\home.html:248
+#: .\mosques\templates\mosques\home.html:249
 msgid ""
 "Plateforme collaborative mondiale pour référencer les mosquées. Contribuez à "
 "préserver et faire rayonner notre patrimoine religieux universel."
@@ -1488,41 +1471,41 @@ msgstr ""
 "منصة تعاونية عالمية لإحصاء المساجد. ساهموا في الحفاظ على تراثنا الديني "
 "العالمي ونشره."
 
-#: .\mosques\templates\mosques\home.html:250
-#: .\mosques\templates\mosques\proposer.html:7
-#: .\mosques\templates\mosques\proposer.html:274
+#: .\mosques\templates\mosques\home.html:251
+#: .\mosques\templates\mosques\proposer.html:8
+#: .\mosques\templates\mosques\proposer.html:275
 msgid "Proposer une mosquée"
 msgstr "اقترح مسجد"
 
-#: .\mosques\templates\mosques\home.html:251
+#: .\mosques\templates\mosques\home.html:252
 msgid "Explorer la carte"
 msgstr "استكشف الخريطة"
 
-#: .\mosques\templates\mosques\home.html:263
+#: .\mosques\templates\mosques\home.html:264
 msgid "Mosquées validées"
 msgstr "المساجد المعتمدة"
 
-#: .\mosques\templates\mosques\home.html:264
+#: .\mosques\templates\mosques\home.html:265
 msgid "Wilayas couvertes"
 msgstr "الولايات المغطاة"
 
-#: .\mosques\templates\mosques\home.html:265
+#: .\mosques\templates\mosques\home.html:266
 msgid "Wilayas actives"
 msgstr "الولايات النشطة"
 
-#: .\mosques\templates\mosques\home.html:271
+#: .\mosques\templates\mosques\home.html:272
 msgid "MODE D'EMPLOI"
 msgstr "تعليمات الاستخدام"
 
-#: .\mosques\templates\mosques\home.html:272
+#: .\mosques\templates\mosques\home.html:273
 msgid "Comment ça marche ?"
 msgstr "كيف يعمل ؟"
 
-#: .\mosques\templates\mosques\home.html:280
+#: .\mosques\templates\mosques\home.html:281
 msgid "Recherchez"
 msgstr "البحث"
 
-#: .\mosques\templates\mosques\home.html:281
+#: .\mosques\templates\mosques\home.html:282
 msgid ""
 "Explorez notre base de données intuitive. Filtrez par Wilaya ou par nom pour "
 "trouver précisément la mosquée que vous cherchez."
@@ -1530,22 +1513,22 @@ msgstr ""
 "استكشف قاعدة بياناتنا سهلة الاستخدام. يمكنك تصفية النتائج حسب الولاية أو "
 "الاسم للعثور على المسجد الذي تبحث عنه بالضبط."
 
-#: .\mosques\templates\mosques\home.html:291
+#: .\mosques\templates\mosques\home.html:292
 msgid "Proposez"
 msgstr "إقتراح"
 
-#: .\mosques\templates\mosques\home.html:292
+#: .\mosques\templates\mosques\home.html:293
 msgid ""
 "Devenez contributeur en ajoutant une mosquée. Remplissez le formulaire, "
 "joignez des photos et aidez à documenter notre patrimoine."
 msgstr ""
 "ساهم في توثيق تراثنا بإضافة مسجد. املأ النموذج،وأرفق صورًا وساعد في توثيقه."
 
-#: .\mosques\templates\mosques\home.html:303
+#: .\mosques\templates\mosques\home.html:304
 msgid "Partagez"
 msgstr "شاركنا"
 
-#: .\mosques\templates\mosques\home.html:305
+#: .\mosques\templates\mosques\home.html:306
 msgid ""
 "Diffusez les fiches des mosquées à vos proches. Ensemble, facilitons l'accès "
 "à l'information pour toute la communauté algérienne."
@@ -1553,268 +1536,314 @@ msgstr ""
 "شاركوا منشورات معلومات المسجد مع أصدقائكم وعائلاتكم. معًا، لنجعل المعلومات "
 "متاحةً لجميع أفراد المجتمع الجزائري."
 
-#: .\mosques\templates\mosques\home.html:316
+#: .\mosques\templates\mosques\home.html:317
 msgid "Derniers ajouts"
 msgstr "أحدث الإضافات"
 
-#: .\mosques\templates\mosques\home.html:338
+#: .\mosques\templates\mosques\home.html:339
 msgid ""
 "Projet collaboratif pour préserver et partager notre patrimoine religieux en "
 "Algérie."
 msgstr "مشروع تعاوني للحفاظ على تراثنا الديني في الجزائر ونشره."
 
-#: .\mosques\templates\mosques\home.html:349
+#: .\mosques\templates\mosques\home.html:350
 msgid "Statut"
 msgstr "الحالة"
 
-#: .\mosques\templates\mosques\home.html:352
+#: .\mosques\templates\mosques\home.html:353
 msgid "Système actif"
 msgstr "النظام النشط"
 
-#: .\mosques\templates\mosques\home.html:354
+#: .\mosques\templates\mosques\home.html:355
 msgid "mosquées référencées"
 msgstr "المساجد المدرجة"
 
-#: .\mosques\templates\mosques\home.html:366
-#: .\mosques\templates\mosques\home.html:450
+#: .\mosques\templates\mosques\home.html:367
 msgid "Lien copié !"
 msgstr "تم نسخ الرابط"
 
-#: .\mosques\templates\mosques\home.html:367
+#: .\mosques\templates\mosques\home.html:368
 msgid "Partagez ce lien dans tous vos réseaux sociaux."
 msgstr "شارك هذا الرابط على جميع شبكات التواصل الاجتماعي الخاصة بك."
 
-#: .\mosques\templates\mosques\mosque_photos_manage.html:209
+#: .\mosques\templates\mosques\mosque_photos_manage.html:214
 msgid "Home"
 msgstr "الصفحة الرئيسية"
 
-#: .\mosques\templates\mosques\pays_detail.html:46
+#: .\mosques\templates\mosques\pays_detail.html:49
 msgid "Mosquées vérifiées"
 msgstr "المساجد المعتمدة"
 
-#: .\mosques\templates\mosques\pays_detail.html:51
+#: .\mosques\templates\mosques\pays_detail.html:54
 msgid "Villes"
 msgstr "المدن"
 
-#: .\mosques\templates\mosques\pays_detail.html:66
+#: .\mosques\templates\mosques\pays_detail.html:69
 msgid "Capitale"
 msgstr "العاصمة"
 
-#: .\mosques\templates\mosques\pays_detail.html:85
+#: .\mosques\templates\mosques\pays_detail.html:88
 msgid "Devise"
 msgstr "العملة"
 
-#: .\mosques\templates\mosques\pays_detail.html:103
+#: .\mosques\templates\mosques\pays_detail.html:106
 msgid "PIB"
 msgstr "الناتج المحلي الإجمالي"
 
-#: .\mosques\templates\mosques\pays_detail.html:120
+#: .\mosques\templates\mosques\pays_detail.html:123
 msgid "Population"
 msgstr "عدد السكان"
 
-#: .\mosques\templates\mosques\pays_detail.html:131
+#: .\mosques\templates\mosques\pays_detail.html:134
 msgid "Langue officielle"
 msgstr "اللغة الرسمية"
 
-#: .\mosques\templates\mosques\pays_detail.html:150
+#: .\mosques\templates\mosques\pays_detail.html:153
 msgid "Répartition par ville"
 msgstr "التوزيع حسب المدينة"
 
-#: .\mosques\templates\mosques\pays_detail.html:185
-
-#| msgid "Mosquées"
+#: .\mosques\templates\mosques\pays_detail.html:188
 msgid "mosquées"
 msgstr "المساجد"
 
-#: .\mosques\templates\mosques\pays_detail.html:200
+#: .\mosques\templates\mosques\pays_detail.html:203
 msgid "Wilayas d'Algérie"
 msgstr "ولايات الجزائر"
 
-#: .\mosques\templates\mosques\pays_detail.html:246
+#: .\mosques\templates\mosques\pays_detail.html:249
 msgid "Voir sur carte"
 msgstr "عرض على الخريطة"
 
-#: .\mosques\templates\mosques\pays_detail.html:263
+#: .\mosques\templates\mosques\pays_detail.html:266
 msgid "Retour au panorama"
 msgstr "العودة إلى البانوراما"
 
-#: .\mosques\templates\mosques\pays_detail.html:268
+#: .\mosques\templates\mosques\pays_detail.html:271
 msgid "Retour à la vue globale de tous les pays"
 msgstr "العودة إلى العرض العالمي لجميع البلدان"
 
-#: .\mosques\templates\mosques\proposer.html:275
+#: .\mosques\templates\mosques\proposer.html:276
 msgid "Aidez-nous à référencer les mosquées."
 msgstr "ساعدنا في إعداد قائمة بالمساجد"
 
-#: .\mosques\templates\mosques\proposer.html:282
+#: .\mosques\templates\mosques\proposer.html:283
 msgid "Publiées"
 msgstr "نُشر"
 
-#: .\mosques\templates\mosques\proposer.html:288
+#: .\mosques\templates\mosques\proposer.html:289
 msgid "En examen"
 msgstr "قيد التحقيق"
 
-#: .\mosques\templates\mosques\proposer.html:294
+#: .\mosques\templates\mosques\proposer.html:295
 msgid "Total"
 msgstr "المجموع"
 
-#: .\mosques\templates\mosques\proposer.html:304
+#: .\mosques\templates\mosques\proposer.html:306
 msgid "Localisation"
 msgstr "موقع"
 
-#: .\mosques\templates\mosques\proposer.html:317
+#: .\mosques\templates\mosques\proposer.html:319
 msgid "Nom de la mosquée"
 msgstr "اسم المسجد"
 
-#: .\mosques\templates\mosques\proposer.html:321
+#: .\mosques\templates\mosques\proposer.html:324
 msgid "Adresse"
 msgstr "العنوان"
 
-#: .\mosques\templates\mosques\proposer.html:328
+#: .\mosques\templates\mosques\proposer.html:331
 msgid "Commune / Ville"
 msgstr "البلدية / المدينة"
 
-#: .\mosques\templates\mosques\proposer.html:338
+#: .\mosques\templates\mosques\proposer.html:341
 msgid "Province / Région / État"
 msgstr "المقاطعة / المنطقة / الدولة"
 
-#: .\mosques\templates\mosques\proposer.html:346
+#: .\mosques\templates\mosques\proposer.html:351
 msgid "Latitude"
 msgstr "خط العرض"
 
 #: .\mosques\templates\mosques\proposer.html:353
+msgid "Ex: 36.752887 (utilisez un point, non pas une virgule)"
+msgstr "مثال: 36.752887 (استخدم نقطة، وليس فاصلة)"
+
+#: .\mosques\templates\mosques\proposer.html:356
+msgid "Format: 36.752887 - Utilisez un point ."
+msgstr "التنسيق: 36.752887 - استخدم نقطة."
+
+#: .\mosques\templates\mosques\proposer.html:357
+msgid "Coordonnée Nord/Sud (utilisez un point .)"
+msgstr "إحداثيات الشمال/الجنوب (استخدم نقطة .)"
+
+#: .\mosques\templates\mosques\proposer.html:360
 msgid "Longitude"
 msgstr "خط الطول"
 
 #: .\mosques\templates\mosques\proposer.html:362
+msgid "Ex: 3.042048 (utilisez un point, non pas une virgule)"
+msgstr "مثال: 3.042048 (استخدم نقطة، وليس فاصلة)"
+
+#: .\mosques\templates\mosques\proposer.html:365
+msgid "Format: 3.042048 - Utilisez un point ."
+msgstr "التنسيق: 3.042048 - استخدم نقطة."
+
+#: .\mosques\templates\mosques\proposer.html:366
+msgid "Coordonnée Est/Ouest (utilisez un point .)"
+msgstr "إحداثيات الشرق/الغرب (استخدم نقطة .)"
+
+#: .\mosques\templates\mosques\proposer.html:370
 msgid "Détails & Histoire"
 msgstr "التفاصيل والتاريخ"
 
-#: .\mosques\templates\mosques\proposer.html:365
+#: .\mosques\templates\mosques\proposer.html:374
 msgid "Description générale"
 msgstr "الوصف العام"
 
-#: .\mosques\templates\mosques\proposer.html:369
+#: .\mosques\templates\mosques\proposer.html:378
 msgid "Histoire ou particularités"
 msgstr "التاريخ أو الخصائص"
 
-#: .\mosques\templates\mosques\proposer.html:374
+#: .\mosques\templates\mosques\proposer.html:385
 msgid "Photos de la mosquée (Max 5)"
 msgstr "صور من المسجد (بحد أقصى 5)"
 
-#: .\mosques\templates\mosques\proposer.html:377
-
-#| msgid "Sélectionnez vos photos (jusqu'à 5)"
+#: .\mosques\templates\mosques\proposer.html:388
 msgid "Sélectionnez vos photos (jusqu'à 5 max)"
 msgstr "اختر صورك (بحد أقصى 5 صور)"
 
-#: .\mosques\templates\mosques\proposer.html:385
+#: .\mosques\templates\mosques\proposer.html:391
 msgid "Cliquez ici pour sélectionner des photos"
 msgstr "انقر هنا لاختيار الصور"
 
-#: .\mosques\templates\mosques\proposer.html:388
-
-#| msgid "Sélectionnez vos photos (jusqu'à 5)"
+#: .\mosques\templates\mosques\proposer.html:394
 msgid "Sélectionner des photos"
 msgstr "اختر صورك (حتى 5 صور)"
 
-#: .\mosques\templates\mosques\proposer.html:396
+#: .\mosques\templates\mosques\proposer.html:400
 msgid "Validation finale"
 msgstr "التحقق النهائي"
 
-#: .\mosques\templates\mosques\proposer.html:399
+#: .\mosques\templates\mosques\proposer.html:404
 msgid "Votre adresse e-mail"
 msgstr "عنوان بريدك  الإلكتروني"
 
-#: .\mosques\templates\mosques\proposer.html:405
+#: .\mosques\templates\mosques\proposer.html:411
 msgid "Je certifie l'exactitude des données transmises."
 msgstr "أُقر بصحة البيانات المرسلة."
 
-#: .\mosques\templates\mosques\proposer.html:411
+#: .\mosques\templates\mosques\proposer.html:418
 msgid "Soumettre ma proposition"
 msgstr "أرسل اقتراحي"
 
-#: .\mosques\templates\mosques\proposer.html:425
-#: .\mosques\templates\mosques\proposer.html:616
+#: .\mosques\templates\mosques\proposer.html:434
+#: .\mosques\templates\mosques\proposer.html:625
 msgid "Trop de photos !"
 msgstr "صور كثيرة جداً !"
 
-#: .\mosques\templates\mosques\proposer.html:426
+#: .\mosques\templates\mosques\proposer.html:435
 msgid "Vous avez sélectionné trop de photos."
 msgstr "لقد اخترت عددًا كبيرًا جدًا من الصور."
 
-#: .\mosques\templates\mosques\proposer.html:427
+#: .\mosques\templates\mosques\proposer.html:436
 msgid "Maximum 5 photos autorisées."
 msgstr "يُسمح بحد أقصى 5 صور."
 
-#: .\mosques\templates\mosques\proposer.html:428
-
-#| msgid "Sélectionnez vos photos (jusqu'à 5)"
+#: .\mosques\templates\mosques\proposer.html:437
 msgid "Veuillez re-sélectionner vos photos (5 maximum)."
 msgstr "يرجى إعادة تحديد صورك (بحد أقصى 5 صور)."
 
-#: .\mosques\templates\mosques\proposer.html:430
+#: .\mosques\templates\mosques\proposer.html:439
 msgid "OK, je vais re-sélectionner"
 msgstr "حسنًا، سأعيد الاختيار"
 
-#: .\mosques\templates\mosques\proposer.html:617
+#: .\mosques\templates\mosques\proposer.html:626
 msgid "Maximum 5 photos autorisées. Veuillez re-sélectionner."
 msgstr "الحد الأقصى المسموح به هو 5 صور. يرجى إعادة الاختيار."
 
-#: .\mosques\templates\mosques\proposer.html:626
-#: .\mosques\templates\mosques\proposer.html:688
-
-#| msgid "Aucune photo disponible"
+#: .\mosques\templates\mosques\proposer.html:635
+#: .\mosques\templates\mosques\proposer.html:697
 msgid "Aucune photo sélectionnée"
 msgstr "لا توجد صورة متاحة"
 
-#: .\mosques\templates\mosques\proposer.html:671
+#: .\mosques\templates\mosques\proposer.html:680
 msgid "Trop de photos ! Veuillez re-sélectionner (5 maximum)."
 msgstr "عدد الصور كبير جدًا! يرجى إعادة الاختيار (5 صور كحد أقصى)."
 
-#: .\mosques\templates\mosques\wilayas.html:217
+#: .\mosques\templates\mosques\wilayas.html:219
 msgid "Mondial"
 msgstr "عالمي"
 
-#: .\mosques\templates\mosques\wilayas.html:218
+#: .\mosques\templates\mosques\wilayas.html:220
 msgid "Explorez les statistiques par continent et par pays"
 msgstr "استكشف الإحصائيات حسب القارة وحسب البلد"
 
-#: .\mosques\templates\mosques\wilayas.html:223
+#: .\mosques\templates\mosques\wilayas.html:225
 msgid "Amérique du Nord"
 msgstr "أمريكا الشمالية"
 
-#: .\mosques\templates\mosques\wilayas.html:226
+#: .\mosques\templates\mosques\wilayas.html:228
 msgid "Europe"
 msgstr "أوروبا"
 
-#: .\mosques\templates\mosques\wilayas.html:229
+#: .\mosques\templates\mosques\wilayas.html:231
 msgid "Afrique"
 msgstr "أفريقيا"
 
-#: .\mosques\templates\mosques\wilayas.html:232
+#: .\mosques\templates\mosques\wilayas.html:234
 msgid "Asie"
 msgstr "آسيا"
 
-#: .\mosques\templates\mosques\wilayas.html:235
+#: .\mosques\templates\mosques\wilayas.html:237
 msgid "Océanie"
 msgstr "أوقيانوسيا"
 
-#: .\mosques\templates\mosques\wilayas.html:238
+#: .\mosques\templates\mosques\wilayas.html:240
 msgid "Amérique du Sud"
 msgstr "أمريكا الجنوبية"
 
-#: .\mosques\templates\mosques\wilayas.html:256
+#: .\mosques\templates\mosques\wilayas.html:258
 msgid "Tapez le nom de votre pays..."
 msgstr "اكتب اسم بلدك..."
 
-#: .\mosques\templates\mosques\wilayas.html:263
+#: .\mosques\templates\mosques\wilayas.html:265
 msgid "Commencez à taper les 2 premières lettres pour voir les suggestions"
 msgstr "ابدأ بكتابة أول حرفين لرؤية الاقتراحات"
 
-#: .\mosques\templates\mosques\wilayas.html:370
+#: .\mosques\templates\mosques\wilayas.html:372
 msgid "Aucun pays trouvé"
 msgstr "لم يتم العثور على أي بلد"
+
+#: .\mosques\views.py:68
+#, python-format
+msgid ""
+"✅ Merci pour votre proposition ! Votre proposition a été enregistrée avec "
+"%s photo(s) et sera examinée par notre équipe."
+msgstr ""
+"✅ شكراً على اقتراحكم! تم تسجيل اقتراحكم مع %s صورة (صور) وسيتم مراجعته من "
+"قبل فريقنا."
+
+#, fuzzy
+#~| msgid "Nom de la mosquée"
+#~ msgid "Nom de la mosquée *"
+#~ msgstr "اسم المسجد"
+
+#, fuzzy
+#~| msgid "Wilaya"
+#~ msgid "Wilaya *"
+#~ msgstr "الولاية"
+
+#, fuzzy
+#~| msgid "Adresse"
+#~ msgid "Adresse précise"
+#~ msgstr "العنوان"
+
+#~ msgid "Toutes les wilayas"
+#~ msgstr "جميع الولايات"
+
+#~ msgid "Photo"
+#~ msgstr "صورة"
+
+#~ msgid "Chargement..."
+#~ msgstr "تحميل..."
 
 #~| msgid "Nom de la mosquée"
 #~ msgid "Photos de la mosquée"
