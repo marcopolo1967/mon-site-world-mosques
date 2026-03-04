@@ -51,8 +51,17 @@ class MosqueAdmin(TranslationAdmin):
 
     inlines = [PrayerSettingsInline]
 
+    def numero_ordre(self, obj):
+        # On récupère toutes les mosquées dans l'ordre de l'affichage
+        # et on cherche l'index de la mosquée actuelle
+        queryset = Mosque.objects.all().order_by('id') # ou ton ordre par défaut
+        index = list(queryset).index(obj) + 1
+        return index
 
-    list_display = ('name', 'country_link', 'display_wilaya', 'city', 'photo_count_display', 'view_photos_link')
+    numero_ordre.short_description = 'N°'
+
+    list_display = ('numero_ordre', 'name', 'country_link', 'display_wilaya', 'city', 'photo_count_display', 'view_photos_link')
+    list_display_links = ('numero_ordre', 'name')
     list_filter = ('country_link', 'wilaya', 'is_verified')
     search_fields = ('name', 'city', 'village', 'address')
     list_per_page = 50
@@ -344,6 +353,7 @@ class MosquePhotosViewAdmin(admin.ModelAdmin):
     """
 
     list_display = ('name', 'city', 'display_country', 'photo_count_display', 'view_photos_link')
+
     list_filter = ('country', 'wilaya', 'is_verified')  # Inversion pays/wilaya dans le filtre
     search_fields = ('name', 'city', 'village', 'address', 'country__name_fr', 'wilaya__name_fr')
     list_per_page = 50
