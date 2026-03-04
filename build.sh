@@ -15,11 +15,13 @@ pip install -r requirements.txt
 echo "🖼️  Collecte des fichiers statiques..."
 python manage.py collectstatic --noinput
 
-# 3️⃣ Appliquer les migrations de base de données
+# 3️⃣ Compiler les fichiers de traduction (AJOUTÉ)
+echo "🌐 Compilation des messages de traduction..."
+python manage.py compilemessages
+
+# 4️⃣ Appliquer les migrations de base de données
 echo "🗄️  Application des migrations..."
 python manage.py migrate --noinput
-
-
 
 # 5️⃣ Créer le superutilisateur marcopolo67 (s'il n'existe pas déjà)
 echo "👤 Création du superutilisateur marcopolo67..."
